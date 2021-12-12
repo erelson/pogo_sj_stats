@@ -385,20 +385,6 @@ def main(args):
     with open(args.file, 'r') as fr:
         entries = parse_csv_to_clean_submissions(fr)
 
-
-if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument("file", default="pogo_sj_stats_oct2021.csv",
-                        help="CSV file from google sheets, containing form responses")
-    args = parser.parse_args()
-    #main(args)
-
-    # TEST
-    #args = Namespace
-    #args.file = "pogo_sj_stats_oct2021.csv"
-    with open(args.file, 'r') as fr:
-        entries = parse_csv_to_clean_submissions(fr)
-
     #render_monthly(entries)
 
     # Generate HTML for each month
@@ -453,3 +439,12 @@ if __name__ == "__main__":
             except Exception as e:
                 print("an unexpected Exception occurred that I was too lazy to predict...")
                 raise
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("file", default="pogo_sj_stats_oct2021.csv",
+                        help="CSV file from google sheets, containing form responses")
+    args = parser.parse_args()
+
+    main(args)
