@@ -13,7 +13,7 @@ import shutil
 
 # Third party
 import dominate
-from dominate.tags import *
+from dominate.tags import a, b, img, link, option, select, table, tr, td, th, div, script
 from dateutil.relativedelta import relativedelta
 
 
@@ -85,8 +85,19 @@ def relative_date_string_to_date(datestr, ref_date_str):
         return None
 
 def parse_csv_to_clean_submissions(fileobj, column_names=None):
+    """
+    Returns:
+        entries: dict by user (lowercase), to subdict by "Response Date" list values
+
+    """
+    # Load columns, if needed.
+    # This feature lets us support old entries on the google form, in case tl40 adds additional columns later.
     if column_names is None:
         column_names = get_column_names(column_names_files)
+    print("Have column sets to match to, with lengths:")
+    for colset in column_names:
+        print("-", len(colset))
+
     raw = csv.reader(fileobj)
     raw_entries = [row for row in raw]
     # TODO(enhancement) change from list to transformed list that matches latest survey columns...
@@ -133,7 +144,7 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
             # TODO... "for ncolumns in known_column_groups: try to match line to group"
             # Keep lines of right length
             found_colset = False
-            for colset in column_names:
+            for colset in column_names:  # Iterate over known line lengths (i.e. number of columns)
                 # Match based on length... lines will have one extra entry
                 # Note: above we already remove "done" (the check mark's alt text) and similar from start of lines
                 #if len(line.split()) - 1 == len(colset):
@@ -212,7 +223,7 @@ def find_near_date(all_data, target_date, day_delta=1):
 
     Returns
         dict by user, containing survey values/increments data dictionary.
-            Users without data near a dat won't be in this returned dict
+            Users without data near a date won't be in this returned dict
     """
     min_date = target_date - datetime.timedelta(days=day_delta)
     max_date = target_date + datetime.timedelta(days=day_delta)
@@ -284,10 +295,15 @@ def to_increment_str(val):
     else:
         return val
 
-def render_monthly_html(entries, month=None):
-    """Return a list of HTML divs, one per calendar month
+def render_monthly_html(entries, month=None, running_totals=None):
+    """Return a list of HTML divs, one per calendar month, and data derived from entries
 
     These are meant to be (one at a time) added to a parent HTML document.
+
+    Args:
+        entries:
+        month:
+        running_totals: TBD
     """
     with open(report_fields_path, 'r') as fr:
         report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
@@ -306,13 +322,30 @@ def render_monthly_html(entries, month=None):
     #monthname = calendar.month_name[months_data.month]
     monthname = calendar.month_name[month.month]
 
+
+    if not running_totals:
+        running_totals = {}  # dict of dicts by stat: [ {user: all-time-total,  ... } ]
+
     content_div = div(cls="content")
     with content_div:
-        #for key in ["Hero", "Gold Gym Badges", "Picknicker", "Backpacker"]:
         for key in report_fields:
+            # Update the all-time data (Absolutely a weird spot to do this, but feels nice to overoptimize sometimes)
+            # Build data: For a report field: [ [month-reported-total, diff, player], ...]
             data = [(months_data[player][key][0], months_data[player][key][1], player) for player in months_data.keys()
                     if months_data[player][key] != (None, None)]
 
+            if key not in running_totals:
+                running_totals[key] = {}
+
+            for tup in data:  # and tup[1] is not None?
+                month_reported_tot = tup[0]
+                player = tup[2]
+                if player not in running_totals[key]:
+                    running_totals[key][player] = month_reported_tot
+                elif month_reported_tot > running_totals[key][player]:
+                    running_totals[key][player] = month_reported_tot
+
+            # Generate the HTML
             metric_row = div(cls="row")
             with metric_row:
                 keyname = report_fields_dict[key]
@@ -321,30 +354,29 @@ def render_monthly_html(entries, month=None):
                 with div_icon:
                     a(img(width=50, title=keyname, alt=keyname, src=f"{keyname}.png"), href=f"#{keyname}")
 
-                data.sort(reverse=True)
+                # Total all-time
+                totals_data = list(running_totals[key].items())  # list of [user, total] pairs
+                totals_data.sort(key=lambda x: -x[1])
                 div_table1 = div(cls="column")
                 with div_table1:
                     table1 = table()
                     with table1:
                         th("Total all time", colspan=3)
-
-                        #results_tables.append(["Total all time",])
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
-                        [tr(td(cnt+1), td(item[2]), td(item[0])) for cnt, item in enumerate(data)]
+                        [tr(td(cnt+1), td(item[0]), td(item[1])) for cnt, item in enumerate(totals_data[:20])]
 
+                # Monthly gains rankings
                 data.sort(key=lambda x: -x[1])
                 div_table2 = div(cls="column")
                 with div_table2:
                     table2_div = table()
                     with table2_div:
                         th(f"{monthname} Increases", colspan=3)
-
-                        #results_tables.append(["Total all time",])
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
-                        [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(data)]
+                        [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(data[:20])]
 
         #print(metric_row)
-    return content_div
+    return content_div, running_totals
 
 
 def main(args):
@@ -354,12 +386,10 @@ def main(args):
         entries = parse_csv_to_clean_submissions(fr)
 
 
-#for entry in entries:
-
-
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("file", help="CSV file from google sheets, containing form responses")
+    parser.add_argument("file", default="pogo_sj_stats_oct2021.csv",
+                        help="CSV file from google sheets, containing form responses")
     args = parser.parse_args()
     #main(args)
 
@@ -374,9 +404,11 @@ if __name__ == "__main__":
     # Generate HTML for each month
     today_date = datetime.date.today()
     starting_date = datetime.date(day=1, year=today_date.year, month=today_date.month)
-    for n in range(12):
-        newmonthdate = starting_date + relativedelta(months=-1 * n, days=-1)  # e.g. 10-31-2021
+    running_totals = None  # will become a dict
+    for n in range(-11, 1):  # last 12 months, starting from 12 months ago
+        newmonthdate = starting_date + relativedelta(months=n, days=-1)  # e.g. 10-31-2021
 
+        # Start of an HTML document
         doc = dominate.document(title='PoGo Stats - San Jose')
         with doc.head:
             link(rel='stylesheet', href='style.css')
@@ -385,6 +417,7 @@ if __name__ == "__main__":
             with open(report_fields_path, 'r') as fr:
                 report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
             report_fields = list(report_fields_dict.keys())
+            # Top bar with linked icons, survey link, and dropdown
             header_box = div(cls="headerbox", id="myHeader")
             with header_box:
                 with div(cls="iconsbox"):
@@ -400,7 +433,8 @@ if __name__ == "__main__":
                             opt = option(month_year_str, value=str(monthdate).rsplit("-", maxsplit=1)[0] + ".html")
                     a("Submit survey data", href=SURVEY_LINK, cls="headerlinks")
 
-            content = render_monthly_html(entries, newmonthdate)
+            # Tables for each stat
+            content, running_totals = render_monthly_html(entries, newmonthdate, running_totals)
             script(type='text/javascript', src='scroll2.js')
 
         date_string = str(newmonthdate).rsplit("-", maxsplit=1)[0]
@@ -411,6 +445,7 @@ if __name__ == "__main__":
         if n == 0:  # copy first generated page to be our 'html/index.html'
             try:
                 shutil.copy(f"html/{date_string}.html", "html/index.html")
+                print("Copied most recent month to 'html/index.html'")
             except shutil.SameFileError:
                 pass
             except PermissionError:
@@ -418,5 +453,3 @@ if __name__ == "__main__":
             except Exception as e:
                 print("an unexpected Exception occurred that I was too lazy to predict...")
                 raise
-
-
