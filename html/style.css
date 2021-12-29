@@ -98,3 +98,39 @@ td {
 .sticky + .content {
   padding-top: 122px;
 }
+
+.Purified {
+  background: #94d2cd;
+}
+
+.Shadow{
+  background: #ca99fe;
+}
+
+.Perfect {
+  background: #f19fad;
+}
+
+.ThreeStars {
+  background: #f89a0f;
+}
+
+.ShinyThreeStars {
+  background: #f5c204;
+}
+
+.Shiny {
+  background: #f5c204;
+}
+
+.Lucky {
+  background: #ffbd6a;
+}
+
+.Event {
+  background: #e2ace3;
+}
+
+.Mega {
+  background: #da85b6;
+}

@@ -13,7 +13,7 @@ import shutil
 
 # Third party
 import dominate
-from dominate.tags import a, b, img, link, option, select, table, tr, td, th, div, script
+from dominate.tags import a, b, img, link, option, select, table, tr, td, th, div, script, meta
 from dateutil.relativedelta import relativedelta
 
 
@@ -28,6 +28,9 @@ report_fields_path = "report_fields_1.json"
 
 DAY_TO_INT = dict(zip(calendar.day_name, range(7)))
 SURVEY_LINK = "https://docs.google.com/forms/d/e/1FAIpQLScOSB49nQMQDIKamSqdLwCL65AddprQJF7Htm5R9J03OjOESw/viewform?usp=sf_link"
+
+N_DEX_ENTRIES = 9
+DEX_NAMES = ["Purified", "Shadow", "Perfect", "3 Stars", "Shiny 3 Stars", "Shiny", "Lucky", "Event", "Mega"]
 
 
 def get_column_names(filepaths=column_names_files):
@@ -87,7 +90,7 @@ def relative_date_string_to_date(datestr, ref_date_str):
 def parse_csv_to_clean_submissions(fileobj, column_names=None):
     """
     Returns:
-        entries: dict by user (lowercase), to subdict by "Response Date" list values
+        entries: dict by user (lowercase), to subdict by "Response Date" list values.
 
     """
     # Load columns, if needed.
@@ -101,29 +104,38 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
     raw = csv.reader(fileobj)
     raw_entries = [row for row in raw]
     # TODO(enhancement) change from list to transformed list that matches latest survey columns...
+    # When tl40 adds new survey fields, we'll have additional columns, but still want to handle old pasted data.
     entries = {}  # dict by user (lowercase), to subdict by "Response Date" list values
+    dex_entries = {}  # dict by user (lowercase), to subdict by "Response Date" list values  TODO
 
     for lineno, raw_entry in enumerate(raw_entries[1:]):  # One copy-paste by a participant; possibly including multiple submissions to TL40.
         input_lines = raw_entry[2].splitlines()
         print("Num input lines in submission:", len(input_lines))
         form_sub_time = raw_entry[0]
         user = raw_entry[1]
+
         if user.lower() not in entries:
             entries[user.lower()] = {}
+        # NOTE: dex entry counts are different from survey responses of tl40 data because there's
+        # only one "row" per submission (while we might have multiple tl40 rows in one response)
+        if user.lower() not in dex_entries:
+            #dex_entries[user.lower()] = {}#[None] * N_DEX_ENTRIES
+            dex_entries[user.lower()] = [None] * N_DEX_ENTRIES
+        dex_data = [int(val) if val else None for val in raw_entry[3:12]]  # 9 dex entries we started recording
+        for cnt, (dex_cnt, dex_cnt2) in enumerate(zip(dex_entries[user.lower()], dex_data)):
+            if dex_cnt2:
+                if dex_cnt is None or dex_cnt2 > dex_cnt:
+                    dex_entries[user.lower()][cnt] = dex_cnt2
+
         input_lines = [line.split("\t") for line in input_lines]
         # Filter out first-column things, as well as "Survey History" and leading empty strings
         for idx in range(len(input_lines)):
             if len(input_lines[idx]) == 0:
                 continue
-            #print(len(input_lines), idx)
-            #print(len(input_lines[idx]))
             while input_lines[idx] and input_lines[idx][0].strip() in ["edit", "done", "warning", "verified_user", "Survey History", '']:
-                #print("prePOP!", input_lines[idx])
                 input_lines[idx] = input_lines[idx][1:]
-                #print("POP!")#, input_lines[idx])
         # Filter out empty lines...
         input_lines = [inp for inp in input_lines if inp]
-        #print([len(l) for l in input_lines])
 
         # Toss truncated start/end lines from copy-paste variation
         if len(input_lines) > 2:
@@ -170,44 +182,47 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
                 print(line)
                 continue
             # ???
-            #lineparts = line.split('\t')
             submission_time = line[0]
 
-            #print('\t\t\t\t', submission_time)
             try:
                 sub_mon, sub_day, sub_year = [int(part) for part in submission_time.split()[0].split("/")]
                 submission_date = datetime.date(sub_year, sub_mon, sub_day)
             except:  # TODO exception types
                 submission_date = relative_date_string_to_date(submission_time, form_sub_time)
-            #entries[user.lower()] = {str(submission_date):
-            #entries[user.lower()][str(submission_date)] = \
             entries[user.lower()][submission_date] = \
                     { field: get_val(val)  for field, val in zip(colset, line)} #column_names[0]}
             # Fill in extra columns
             #entries[user.lower()] = {str(submission_date):
             #        { field: val for field, val  in zip(colset, line)} }#column_names[0]}
 
-    return entries
+    return entries, dex_entries
 
 
 def get_val(valstring):
-    # A bunch of lazy parsing logic
+    """A bunch of lazy parsing logic for contents of each "table cell" copied from tl40data.com.
+
+    Categories:
+    1. Date of submission
+    2. String, like a username
+    3. Numeric value, with or without an increment
+    4. No data, represented as "---"
+    """
     # TODO decide what empty/missing values ought to be and explicitly define meaning of None or empty string, etc.
     valstring = valstring.strip()
     if valstring == "---" or not valstring:
         return (None, None)
-    #print(valstring)
-    if len(valstring) == 10 and valstring[2] == "/": # dates
+    if len(valstring) == 10 and valstring[2] == "/": # column is a date; just return value
         return (valstring, '')
     try:
         int(valstring[0])
     except:
-        # non-numeric values
+        # non-numeric values; just return the value
         return (valstring.strip(), '')
-    val = valstring.split()[0]  # For now we ignore the diffs
+    # We've got a numeric value like '12345 (+123)' or just '12345'.
+    val = valstring.split()[0] # column total value, e.g. '12345'
     val = int(val.replace(",", ""))
     if len(valstring.split()) == 2:
-        incrstring = valstring.split()[1]
+        incrstring = valstring.split()[1] # column monthly increase, e.g. '(+123)'
         incrstring = int(incrstring.strip("()+").replace(",", ""))
     else: incrstring = 0
     return (val, incrstring)
@@ -316,10 +331,7 @@ def render_monthly_html(entries, month=None, running_totals=None):
         month = starting_date
 
     #oct_data = find_near_date(entries, datetime.date(2021, 10, 31))
-    #sept_data = find_near_date(entries, datetime.date(2021, 9, 30))
-    #months_data = find_near_date(entries, datetime.date(2021, 9, 30))
     months_data = find_near_date(entries, month)
-    #monthname = calendar.month_name[months_data.month]
     monthname = calendar.month_name[month.month]
 
 
@@ -329,7 +341,7 @@ def render_monthly_html(entries, month=None, running_totals=None):
     content_div = div(cls="content")
     with content_div:
         for key in report_fields:
-            # Update the all-time data (Absolutely a weird spot to do this, but feels nice to overoptimize sometimes)
+            # Update the ALL-TIME data (Absolutely a weird spot to do this, but feels nice to overoptimize sometimes)
             # Build data: For a report field: [ [month-reported-total, diff, player], ...]
             data = [(months_data[player][key][0], months_data[player][key][1], player) for player in months_data.keys()
                     if months_data[player][key] != (None, None)]
@@ -361,7 +373,7 @@ def render_monthly_html(entries, month=None, running_totals=None):
                 with div_table1:
                     table1 = table()
                     with table1:
-                        th("Total all time", colspan=3)
+                        th(f"{key} — Total all time", colspan=3)
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
                         [tr(td(cnt+1), td(item[0]), td(item[1])) for cnt, item in enumerate(totals_data[:20])]
 
@@ -375,15 +387,16 @@ def render_monthly_html(entries, month=None, running_totals=None):
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
                         [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(data[:20])]
 
+        for n in range(5):
+            pass
         #print(metric_row)
     return content_div, running_totals
 
 
 def main(args):
-    #args = Namespace
-    #args.file = "pogo_sj_stats_oct2021.csv"
+    # Read CSV file
     with open(args.file, 'r') as fr:
-        entries = parse_csv_to_clean_submissions(fr)
+        entries, dex_entries = parse_csv_to_clean_submissions(fr)
 
     #render_monthly(entries)
 
@@ -398,6 +411,7 @@ def main(args):
         doc = dominate.document(title='PoGo Stats - San Jose')
         with doc.head:
             link(rel='stylesheet', href='style.css')
+            meta(charset='utf-8')
         with doc:
             # TODO move to func?
             with open(report_fields_path, 'r') as fr:
@@ -423,6 +437,22 @@ def main(args):
             content, running_totals = render_monthly_html(entries, newmonthdate, running_totals)
             script(type='text/javascript', src='scroll2.js')
 
+            # Tables for dex entry counts, only included for the most recent month
+            if n == 0:
+                # Flatten the dict to a list, with player at the end; None -> 0 for sort purposes
+                dex_lists = [[val or 0 for val in values] + [player] for player, values in dex_entries.items()]
+                for idx, dexname in enumerate(DEX_NAMES):
+                    dex_lists.sort(key=lambda x: x[idx], reverse=True)
+                    table_data = [(user_dex[-1], user_dex[idx]) for user_dex in dex_lists[:20] if user_dex[idx] > 0]
+
+                    div_table2 = div(cls="todo")
+                    with div_table2:
+                        table2_div = table()
+                        with table2_div:
+                            th(f"Pokédex: {dexname}", colspan=3, cls=dexname.replace("3", "Three").replace(" ", ""))
+                            tr(td(b("Rank")), td(b("Player")), td(b(dexname)))
+                            [tr(td(cnt+1), td(item[0]), td(item[1])) for cnt, item in enumerate(table_data)]
+
         date_string = str(newmonthdate).rsplit("-", maxsplit=1)[0]
         print("Generated page for", date_string)
         with open(f"html/{date_string}.html", 'w') as fr:
@@ -444,7 +474,7 @@ def main(args):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("file", default="pogo_sj_stats_oct2021.csv",
-                        help="CSV file from google sheets, containing form responses")
+                        help="CSV file from google sheets, containing entire history of form responses")
     args = parser.parse_args()
 
     main(args)
