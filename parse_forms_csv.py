@@ -190,7 +190,7 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
             except:  # TODO exception types
                 submission_date = relative_date_string_to_date(submission_time, form_sub_time)
             entries[user.lower()][submission_date] = \
-                    { field: get_val(val)  for field, val in zip(colset, line)} #column_names[0]}
+                    {field: get_val(val)  for field, val in zip(colset, line)} #column_names[0]}
             # Fill in extra columns
             #entries[user.lower()] = {str(submission_date):
             #        { field: val for field, val  in zip(colset, line)} }#column_names[0]}
@@ -225,7 +225,7 @@ def get_val(valstring):
         incrstring = valstring.split()[1] # column monthly increase, e.g. '(+123)'
         incrstring = int(incrstring.strip("()+").replace(",", ""))
     else: incrstring = 0
-    return (val, incrstring)
+    return {"value": val, "change": incrstring}
 
 
 def find_near_date(all_data, target_date, day_delta=1):
@@ -343,7 +343,7 @@ def render_monthly_html(entries, month=None, running_totals=None):
         for key in report_fields:
             # Update the ALL-TIME data (Absolutely a weird spot to do this, but feels nice to overoptimize sometimes)
             # Build data: For a report field: [ [month-reported-total, diff, player], ...]
-            data = [(months_data[player][key][0], months_data[player][key][1], player) for player in months_data.keys()
+            data = [(months_data[player][key]["value"], months_data[player][key]["change"], player) for player in months_data.keys()
                     if months_data[player][key] != (None, None)]
 
             if key not in running_totals:
