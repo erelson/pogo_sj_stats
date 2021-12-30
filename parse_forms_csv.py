@@ -347,7 +347,7 @@ def render_monthly_html(entries, month=None, running_totals=None):
             # Update the ALL-TIME data (Absolutely a weird spot to do this, but feels nice to overoptimize sometimes)
             # Build data: For a report field: [ [month-reported-total, diff, player], ...]
             data = [(months_data[player][key]["value"], months_data[player][key]["change"], player) for player in months_data.keys()
-                    if months_data[player][key] != (None, None)]
+                    if months_data[player][key]["value"] != None]
 
             if key not in running_totals:
                 running_totals[key] = {}
