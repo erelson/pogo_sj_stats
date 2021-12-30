@@ -206,18 +206,21 @@ def get_val(valstring):
     2. String, like a username
     3. Numeric value, with or without an increment
     4. No data, represented as "---"
+
+    Returns dictionary of the two parsed values, "value" and "change" that may be present.
+    If there's no "change", that value will be None.
     """
     # TODO decide what empty/missing values ought to be and explicitly define meaning of None or empty string, etc.
     valstring = valstring.strip()
     if valstring == "---" or not valstring:
-        return (None, None)
+        return {"value": None, "change": None}
     if len(valstring) == 10 and valstring[2] == "/": # column is a date; just return value
-        return (valstring, '')
+        return {"value": valstring, "change":''}
     try:
         int(valstring[0])
     except:
         # non-numeric values; just return the value
-        return (valstring.strip(), '')
+        return {"value": valstring.strip(), "change": ''}
     # We've got a numeric value like '12345 (+123)' or just '12345'.
     val = valstring.split()[0] # column total value, e.g. '12345'
     val = int(val.replace(",", ""))
