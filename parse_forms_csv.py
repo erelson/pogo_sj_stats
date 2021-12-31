@@ -236,6 +236,64 @@ def get_val(valstring):
     return {"value": val, "change": incrstring}
 
 
+def add_monthly_changes(entries, quantity_names):
+    """Add derived fields to all survey entries for monthly deltas"""
+    for user in entries:
+        dates = sorted(entries[user])
+        # Case: first submission for user
+        # Case: only have one tl40 submission for user... set all changes to None
+        # Case: preceding submission exists... normalize changes to length of month
+        for idx, d in enumerate(dates):
+            if idx == 0:
+                for stat in quantity_names:
+                    entries[user][d][stat]["calculated_monthly_change"] = None
+                    entries[user][d][stat]["calculated_with_tdelta"] = None
+                continue
+            else:
+                prev_month_idx = idx - 1
+                # TODO... what was my plan for this while loop? Go back further than 'nearby' dates? Which I would determine... how?
+                #while prev_month_idx > 0 and dates[idx] - dates[prev_month_idx]:
+                #    prev_month_idx -= 1
+
+                # TODO validate elapsed time between d and dates[prev_month_idx] is... long enough
+                #for stat in entries[user][d]:
+                    #if stat in quantity_names:
+                for stat in quantity_names:
+                    d_prev = dates[prev_month_idx]
+                    tdelta = d - d_prev
+                    tdelta = tdelta.days  # days, since we don't factor in seconds or microseconds
+                    # Targeting our monthly comparisons, use the 'day' to determine if we want the
+                    # length of the month in 'd', or for the month prior.
+                    if d.day < 3:  # Simple criteria: For both 11-2 and 10-31, use 'the length of month 10'
+                        prev_month = d.month - 1
+                        year = d.year
+                        if prev_month == 0:
+                           prev_month = 12
+                           year = d.year - 1
+                        current_month_length = calendar.monthrange(year, prev_month)[1]
+                    else:
+                        current_month_length = calendar.monthrange(d.year, d.month)[1]
+                    scale_factor = tdelta / current_month_length
+
+                    current = entries[user][d][stat]["value"]
+                    previous = entries[user][d_prev][stat]["value"]
+                    if current is None or previous is None:
+                        entries[user][d][stat]["calculated_monthly_change"] = None
+                        entries[user][d][stat]["calculated_with_tdelta"] = None
+                        continue  # Assumption: None means this value didn't exist in current/previous surveys
+                    try:
+                        current = int(current)
+                        previous = int(previous)
+                        change = current - previous
+                    except TypeError:
+                        print("Something unexpected when trying to calculate a numeric change...")
+                        print(stat, idx, prev_month_idx)
+                        print(previous)
+                        raise
+                    entries[user][d][stat]["calculated_monthly_change"] = scale_factor * change
+                    entries[user][d][stat]["calculated_with_tdelta"] = tdelta
+
+
 def find_near_date(all_data, target_date, day_delta=1):
     """Find form submissions near specific date (typically look for last day of month +/- 1 day)
 
@@ -342,22 +400,24 @@ def render_monthly_html(entries, month=None, running_totals=None):
     months_data = find_near_date(entries, month)
     monthname = calendar.month_name[month.month]
 
-
     if not running_totals:
         running_totals = {}  # dict of dicts by stat: [ {user: all-time-total,  ... } ]
 
     content_div = div(cls="content")
     with content_div:
         for key in report_fields:
+            # TODO(cleanup) Don't need these two list comprehensions to duplicate so much of each other.
             # Update the ALL-TIME data (Absolutely a weird spot to do this, but feels nice to overoptimize sometimes)
             # Build data: For a report field: [ [month-reported-total, diff, player], ...]
-            data = [(months_data[player][key]["value"], months_data[player][key]["change"], player) for player in months_data.keys()
+            data = [(months_data[player][key]["value"], months_data[player][key]["change"], player, months_data[player][key]["calculated_monthly_change"], months_data[player][key]["calculated_with_tdelta"]) for player in months_data.keys()
                     if months_data[player][key]["value"] != None]
+            changedata = [(months_data[player][key]["value"], months_data[player][key]["change"], player, months_data[player][key]["calculated_monthly_change"], months_data[player][key]["calculated_with_tdelta"]) for player in months_data.keys()
+                    if months_data[player][key]["calculated_monthly_change"] != None]
 
             if key not in running_totals:
                 running_totals[key] = {}
 
-            for tup in data:  # and tup[1] is not None?
+            for tup in data:
                 month_reported_tot = tup[0]
                 player = tup[2]
                 if player not in running_totals[key]:
@@ -383,17 +443,19 @@ def render_monthly_html(entries, month=None, running_totals=None):
                     with table1:
                         th(f"{key} — Total all time", colspan=3)
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
-                        [tr(td(cnt+1), td(item[0]), td(item[1])) for cnt, item in enumerate(totals_data[:20])]
+                        [tr(td(cnt+1), td(item[0]), td(f"{item[1]:,}")) for cnt, item in enumerate(totals_data[:20])]
 
                 # Monthly gains rankings
-                data.sort(key=lambda x: -x[1])
+                #data.sort(key=lambda x: -x[1]) # raw +XXX values
+                changedata.sort(key=lambda x: -x[3]) # normalized values
                 div_table2 = div(cls="column")
                 with div_table2:
                     table2_div = table()
                     with table2_div:
                         th(f"{monthname} Increases", colspan=3)
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
-                        [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(data[:20])]
+                        #[tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(data[:20])]
+                        [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(changedata[:20])]
 
     return content_div, running_totals
 
@@ -407,6 +469,9 @@ def main(args):
     # Read CSV file
     with open(args.file, 'r') as fr:
         entries, dex_entries = parse_csv_to_clean_submissions(fr)
+
+    # Calculate monthly diffs
+    add_monthly_changes(entries, list(report_fields_dict.keys()))
 
     #render_monthly(entries)
 
