@@ -57,11 +57,16 @@ def get_column_names(filepaths=column_names_files):
     column_names.sort(key=lambda x: len(x))
     return column_names
 
+
 def relative_date_string_to_date(datestr, ref_date_str):
-    """
+    """Return the date indicated by a relative date string like "Last Tuesday".
+
+    While the strings include times, too, we don't parse these, since the older submissions
+    reported on TL40 only have the date, not the time.
+
     Arguments:
-        datestr - string: String starting with e.g. "Today", "Last Sunday", "Yesterday"
-        ref_date_str - ...: "MM/DD/YYYY HH:mm:ss" string, though only the date part is used
+        datestr (str): String starting with e.g. "Today", "Last Sunday", "Yesterday"
+        ref_date_str (str): "MM/DD/YYYY HH:mm:ss" string, though only the date part is used
 
     Returns
         date - datetime.date:
@@ -87,11 +92,11 @@ def relative_date_string_to_date(datestr, ref_date_str):
         print(f"FAILED TO HANDLE 'datestr' with value '{datestr}'")
         return None
 
+
 def parse_csv_to_clean_submissions(fileobj, column_names=None):
     """
     Returns:
         entries: dict by user (lowercase), to subdict by "Response Date" list values.
-
     """
     # Load columns, if needed.
     # This feature lets us support old entries on the google form, in case tl40 adds additional columns later.
@@ -105,8 +110,8 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
     raw_entries = [row for row in raw]
     # TODO(enhancement) change from list to transformed list that matches latest survey columns...
     # When tl40 adds new survey fields, we'll have additional columns, but still want to handle old pasted data.
-    entries = {}  # dict by user (lowercase), to subdict by "Response Date" list values
-    dex_entries = {}  # dict by user (lowercase), to subdict by "Response Date" list values  TODO
+    entries = {}  # dict by user (lowercase), to subdicts by "Response Date" list values
+    dex_entries = {}  # dict by user (lowercase), to subdicts by "Response Date" list values  TODO
 
     for lineno, raw_entry in enumerate(raw_entries[1:]):  # One copy-paste by a participant; possibly including multiple submissions to TL40.
         input_lines = raw_entry[2].splitlines()
@@ -309,9 +314,9 @@ def to_increment_str(val):
     except:
         return val
     if float(val) > 0:
-        return "+" + str(val)
+        return f"+{val:,}"
     else:
-        return val
+        return f"{val:,}"
 
 def render_monthly_html(entries, month=None, running_totals=None):
     """Return a list of HTML divs, one per calendar month, and data derived from entries
@@ -390,13 +395,15 @@ def render_monthly_html(entries, month=None, running_totals=None):
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
                         [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(data[:20])]
 
-        for n in range(5):
-            pass
-        #print(metric_row)
     return content_div, running_totals
 
 
 def main(args):
+    # ...
+    with open(report_fields_path, 'r') as fr:
+        report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
+    report_fields = list(report_fields_dict.keys())
+
     # Read CSV file
     with open(args.file, 'r') as fr:
         entries, dex_entries = parse_csv_to_clean_submissions(fr)
@@ -417,9 +424,6 @@ def main(args):
             meta(charset='utf-8')
         with doc:
             # TODO move to func?
-            with open(report_fields_path, 'r') as fr:
-                report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
-            report_fields = list(report_fields_dict.keys())
             # Top bar with linked icons, survey link, and dropdown
             header_box = div(cls="headerbox", id="myHeader")
             with header_box:
