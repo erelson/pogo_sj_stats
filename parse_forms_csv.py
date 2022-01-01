@@ -135,10 +135,12 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
         input_lines = [line.split("\t") for line in input_lines]
         # Filter out first-column things, as well as "Survey History" and leading empty strings
         for idx in range(len(input_lines)):
-            if len(input_lines[idx]) == 0:
-                continue
             while input_lines[idx] and input_lines[idx][0].strip() in ["edit", "done", "warning", "verified_user", "Survey History", '']:
                 input_lines[idx] = input_lines[idx][1:]
+            if len(input_lines[idx]) == 0:
+                continue
+            while input_lines[idx][-1] == '':
+                input_lines[idx] = input_lines[idx][:-1]
         # Filter out empty lines...
         input_lines = [inp for inp in input_lines if inp]
 
