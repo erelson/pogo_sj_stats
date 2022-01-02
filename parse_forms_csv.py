@@ -133,6 +133,9 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
                     dex_entries[user.lower()][cnt] = dex_cnt2
 
         input_lines = [line.split("\t") for line in input_lines]
+        for cnt, line in enumerate(input_lines):
+            if len(line) == 1:  # 8x spaces instead of tabs?
+                input_lines[cnt] = line[0].split("        ")
         # Filter out first-column things, as well as "Survey History" and leading empty strings
         for idx in range(len(input_lines)):
             while input_lines[idx] and input_lines[idx][0].strip() in ["edit", "done", "warning", "verified_user", "Survey History", '']:
@@ -150,7 +153,6 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
             if len(input_lines[1]) > len(input_lines[-1]):
                 input_lines = input_lines[:-1]
             # Remove truncated first line
-            #if len(input_lines[1]) > len(input_lines[-1]):  # Buggy version probably
             if len(input_lines[0]) < len(input_lines[-1]):
                 input_lines = input_lines[1:]
             first_len = len(input_lines[0])
@@ -159,34 +161,36 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
                 print(f"Warning: for entry {raw_entry[:2]} got varying number of line parts... should investigate...")
                 print(f"   had {len(input_lines)} after cleanup when checking this...")
         for line in input_lines:  # Iterate over each TL40 submission
-            # Discard lines that are too short
-            # TODO... "for ncolumns in known_column_groups: try to match line to group"
-            # Keep lines of right length
+            # Match lines to column sets by length, aka number of columns
+            # Note: above we already remove "done" (the check mark's alt text) and similar from start of lines
             found_colset = False
             for colset in column_names:  # Iterate over known line lengths (i.e. number of columns)
-                # Match based on length... lines will have one extra entry
-                # Note: above we already remove "done" (the check mark's alt text) and similar from start of lines
-                #if len(line.split()) - 1 == len(colset):
-                #print("COMPARE", len(line), len(colset))
                 if len(line) == len(colset):
-                    #if colset[0] == line[0]: # lazy but maybe we need to fix this
-                    #    # Skipping header line
-                    #    print("skip:", line[:3])
-                    #    continue
-
-                    #print("Matched to a header set!")
                     found_colset = True
                     break
                 # TODO validate line further
-
-            #print(colset[0] == line[0], f"'{colset[0]}' '{line[0]}'")
-            if colset[0] == line[0].strip(): # lazy but maybe we need to fix this
-                # Skipping header line
-                #print("match then skip:", line[:3])
-                continue
+            # Recovery: Possibly handle partial copying of lines, where user both did not fill in catch medal counts,
+            # and selected some of those unfilled ('---') columns.
+            oldline = None  # line before we drop trailing '---' columns
+            if not found_colset:
+                oldline = line
+                while line[-1] == '---':
+                    line = line[:-1]
+                for colset in column_names:  # Iterate over known line lengths (i.e. number of columns)
+                    if len(line) == len(colset):
+                        found_colset = True
+                        break
             if not found_colset:
                 print(f"!!!!!!!!!!!Was unable to find colset for line {lineno+2} ({raw_entry[1]})...", len(line))  # TODO more debug output
+                if oldline:
+                    print("Full line parts:")
+                    print(oldline)
+                    print(f"Line parts after stripping '---' (resulting in {len(line)} remaining parts)")
                 print(line)
+                continue
+
+            # Skipping header lines, i.e. lines that match the colset's column names
+            if colset[0] == line[0].strip(): # lazy but maybe we need to fix this
                 continue
             # ???
             submission_time = line[0]
