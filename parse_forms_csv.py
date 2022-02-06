@@ -3,7 +3,8 @@
 # Some assumptions:
 # - All dates listed on tl40 are MM/DD/YYYY regardless of locale, etc.
 
-from argparse import ArgumentParser, Namespace
+# Standard library
+from argparse import ArgumentParser
 import calendar
 import csv
 import datetime
@@ -15,6 +16,9 @@ import shutil
 import dominate
 from dominate.tags import a, b, img, link, option, select, table, tr, td, th, div, script, meta
 from dateutil.relativedelta import relativedelta
+
+# Custom
+from download_google_sheets_csv import main as get_csv
 
 
 # Keep a list of current and past column headers tracked in the survey.
@@ -479,6 +483,18 @@ def main(args):
     with open(report_fields_path, 'r') as fr:
         report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
     report_fields = list(report_fields_dict.keys())
+
+    # If not given a CSV, try to get CSV by treating args.file as a keyfile
+    if not args.file.endswith(".csv"):
+        csvfilename = "latest_stats_responses.csv"
+        try:
+            get_csv(keyfile=args.file, save_file=csvfilename)
+        except Exception as e:
+            print("Got an exception while trying to auto-obtain .csv file:")
+            print(e)
+            print("Make sure you pass in either a .csv file or a keyfile for Google Docs API.")
+
+        args.file = csvfilename
 
     # Read CSV file
     with open(args.file, 'r') as fr:
