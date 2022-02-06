@@ -115,7 +115,7 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
 
     for lineno, raw_entry in enumerate(raw_entries[1:]):  # One copy-paste by a participant; possibly including multiple submissions to TL40.
         input_lines = raw_entry[2].splitlines()
-        print("Num input lines in submission:", len(input_lines))
+        print(f"Num input lines in submission ({raw_entry[1]}):", len(input_lines))
         form_sub_time = raw_entry[0]
         user = raw_entry[1]
 
@@ -279,7 +279,7 @@ def add_monthly_changes(entries, quantity_names):
                         current_month_length = calendar.monthrange(year, prev_month)[1]
                     else:
                         current_month_length = calendar.monthrange(d.year, d.month)[1]
-                    scale_factor = tdelta / current_month_length
+                    scale_factor = current_month_length / tdelta
 
                     current = entries[user][d][stat]["value"]
                     previous = entries[user][d_prev][stat]["value"]
@@ -300,7 +300,7 @@ def add_monthly_changes(entries, quantity_names):
                     entries[user][d][stat]["calculated_with_tdelta"] = tdelta
 
 
-def find_near_date(all_data, target_date, day_delta=1):
+def find_near_date(all_data, target_date, day_delta=3):  # TODO be smarter/more reasonable about the day_delta. Used to be '1'.
     """Find form submissions near specific date (typically look for last day of month +/- 1 day)
 
     Arguments
@@ -310,7 +310,9 @@ def find_near_date(all_data, target_date, day_delta=1):
 
     Returns
         dict by user, containing survey values/increments data dictionary.
-            Users without data near a date won't be in this returned dict
+            Users without data near a date won't be in this returned dict.
+            For a user with multiple entries in `target_date +/- day_delta`,
+            will select the "best" date. See test cases for all variations.
     """
     min_date = target_date - datetime.timedelta(days=day_delta)
     max_date = target_date + datetime.timedelta(days=day_delta)
@@ -378,9 +380,9 @@ def to_increment_str(val):
     except:
         return val
     if float(val) > 0:
-        return f"+{val:,}"
+        return f"+{int(float(val)):,}"
     else:
-        return f"{val:,}"
+        return f"{int(float(val)):,}"
 
 def render_monthly_html(entries, month=None, running_totals=None):
     """Return a list of HTML divs, one per calendar month, and data derived from entries
@@ -417,8 +419,14 @@ def render_monthly_html(entries, month=None, running_totals=None):
             # Build data: For a report field: [ [month-reported-total, diff, player], ...]
             data = [(months_data[player][key]["value"], months_data[player][key]["change"], player, months_data[player][key]["calculated_monthly_change"], months_data[player][key]["calculated_with_tdelta"]) for player in months_data.keys()
                     if months_data[player][key]["value"] != None]
-            changedata = [(months_data[player][key]["value"], months_data[player][key]["change"], player, months_data[player][key]["calculated_monthly_change"], months_data[player][key]["calculated_with_tdelta"]) for player in months_data.keys()
-                    if months_data[player][key]["calculated_monthly_change"] != None]
+            changedata = [(months_data[player][key]["value"],
+                           months_data[player][key]["change"],
+                           player,
+                           months_data[player][key]["calculated_monthly_change"],
+                           months_data[player][key]["calculated_with_tdelta"]
+                          )
+                          for player in months_data.keys()
+                          if months_data[player][key]["calculated_monthly_change"] != None]
 
             if key not in running_totals:
                 running_totals[key] = {}
@@ -461,7 +469,7 @@ def render_monthly_html(entries, month=None, running_totals=None):
                         th(f"{monthname} Increases", colspan=3)
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
                         #[tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(data[:20])]
-                        [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(changedata[:20])]
+                        [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[3]))) for cnt, item in enumerate(changedata[:20])] # normalized value
 
     return content_div, running_totals
 
