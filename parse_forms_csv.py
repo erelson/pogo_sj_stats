@@ -10,11 +10,12 @@ import csv
 import datetime
 import json
 import os
+import random
 import shutil
 
 # Third party
 import dominate
-from dominate.tags import a, b, img, link, option, select, table, tr, td, th, div, script, meta
+from dominate.tags import a, b, img, link, option, select, table, tr, td, th, div, script, meta, sup
 from dateutil.relativedelta import relativedelta
 
 # Custom
@@ -35,6 +36,51 @@ SURVEY_LINK = "https://docs.google.com/forms/d/e/1FAIpQLScOSB49nQMQDIKamSqdLwCL6
 
 N_DEX_ENTRIES = 9
 DEX_NAMES = ["Purified", "Shadow", "Perfect", "3 Stars", "Shiny 3 Stars", "Shiny", "Lucky", "Event", "Mega"]
+
+
+quips = [
+        '"I\'m so proud!"',
+        '"You tried."',
+        '"The best there ever was!"',
+        '"... did you steal my cabbages? :\'("',
+        '"Very a-Mew-sing"',
+        '"¯\_(ツ)_/¯"',
+        '"Those other trainers ain\'t got a Chansey against you"',
+        '"Blasting off again!"',
+        '"You ain\'t no casual!"',
+        '"But did you find Kecleon yet?"',
+        '"You reached previously Unown levels!"',
+        '"Big oof, err, I mean, Bidoof."',
+        '"Ho-oh, you can do better."',
+        '"Da real Machamp!"',
+        '"What an incredible journey!"',
+        '"Did you get a bit Drowzee this month?"',
+        '"You\'re a Staryu!"',
+        '"Did you run out of Pokéballs?"',
+        '"Good work Trainer!"',
+        '"Wait till I tell Professor Oak!"',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+#        '""',
+        ]
+
+def random_quip():
+    idx = random.randrange(0, len(quips))
+    return quips[idx]
 
 
 def get_column_names(filepaths=column_names_files):
@@ -249,7 +295,12 @@ def get_val(valstring):
 def add_monthly_changes(entries, quantity_names):
     """Add derived fields to all survey entries for monthly deltas"""
     for user in entries:
-        dates = sorted(entries[user])
+        try:
+            dates = sorted(entries[user])
+        except TypeError:
+            print(user)
+            print(entries[user])
+            continue
         # Case: first submission for user
         # Case: only have one tl40 submission for user... set all changes to None
         # Case: preceding submission exists... normalize changes to length of month
@@ -316,7 +367,7 @@ def find_near_date(all_data, target_date, day_delta=3):  # TODO be smarter/more 
         dict by user, containing survey values/increments data dictionary.
             Users without data near a date won't be in this returned dict.
             For a user with multiple entries in `target_date +/- day_delta`,
-            will select the "best" date. See test cases for all variations.
+            will select the "bets" date. See test cases for all variations.
     """
     min_date = target_date - datetime.timedelta(days=day_delta)
     max_date = target_date + datetime.timedelta(days=day_delta)
@@ -473,7 +524,14 @@ def render_monthly_html(entries, month=None, running_totals=None):
                         th(f"{monthname} Increases", colspan=3)
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
                         #[tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(data[:20])]
-                        [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[3]))) for cnt, item in enumerate(changedata[:20])] # normalized value
+                        [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[3])))
+                                for cnt, item in enumerate(changedata[:20])] # normalized value
+
+                        # April fools 2022
+                        #[tr(td(cnt+1), td(item[2]), td(to_increment_str(item[3]), img(width=25, src="prof_willow_round.webp"), sup(random_quip())))
+                        #        for cnt, item in enumerate(changedata[0:1])] # normalized value # 1
+                        #[tr(td(cnt+2), td(item[2]), td(to_increment_str(item[3])))
+                        #        for cnt, item in enumerate(changedata[1:20])] # normalized value #s 2-20
 
     return content_div, running_totals
 
@@ -574,7 +632,8 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
+    parser = ArgumentParser(description="Grab a google sheet (or use a specified local CSV) "
+                                        "and generate HTML stat pages")
     parser.add_argument("file", default="pogo_sj_stats_oct2021.csv",
                         help="CSV file from google sheets, containing entire history of form responses")
     args = parser.parse_args()
