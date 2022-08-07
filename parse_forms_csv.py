@@ -11,6 +11,7 @@ import datetime
 import json
 import os
 import random
+import re
 import shutil
 
 # Third party
@@ -36,6 +37,7 @@ SURVEY_LINK = "https://docs.google.com/forms/d/e/1FAIpQLScOSB49nQMQDIKamSqdLwCL6
 
 N_DEX_ENTRIES = 9
 DEX_NAMES = ["Purified", "Shadow", "Perfect", "3 Stars", "Shiny 3 Stars", "Shiny", "Lucky", "Event", "Mega"]
+N_TYPE_MEDALS = 18
 
 
 quips = [
@@ -145,8 +147,10 @@ def relative_date_string_to_date(datestr, ref_date_str):
 
 def parse_csv_to_clean_submissions(fileobj, column_names=None):
     """
+
     Returns:
         entries: dict by user (lowercase), to subdict by "Response Date" list values.
+        dex_entries: dict by user (lowercase), to subdicts by "Response Date" list values
     """
     # Load columns, if needed.
     # This feature lets us support old entries on the google form, in case tl40 adds additional columns later.
@@ -167,20 +171,19 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
         input_lines = raw_entry[2].splitlines()
         print(f"Num input lines in submission ({raw_entry[1]}):", len(input_lines))
         form_sub_time = raw_entry[0]
-        user = raw_entry[1]
+        user = raw_entry[1].lower().strip()
 
-        if user.lower() not in entries:
-            entries[user.lower()] = {}
+        if user not in entries:
+            entries[user] = {}
         # NOTE: dex entry counts are different from survey responses of tl40 data because there's
         # only one "row" per submission (while we might have multiple tl40 rows in one response)
-        if user.lower() not in dex_entries:
-            #dex_entries[user.lower()] = {}#[None] * N_DEX_ENTRIES
-            dex_entries[user.lower()] = [None] * N_DEX_ENTRIES
+        if user not in dex_entries:
+            dex_entries[user] = [None] * N_DEX_ENTRIES
         dex_data = [int(val) if val else None for val in raw_entry[3:12]]  # 9 dex entries we started recording
-        for cnt, (dex_cnt, dex_cnt2) in enumerate(zip(dex_entries[user.lower()], dex_data)):
+        for cnt, (dex_cnt, dex_cnt2) in enumerate(zip(dex_entries[user], dex_data)):
             if dex_cnt2:
                 if dex_cnt is None or dex_cnt2 > dex_cnt:
-                    dex_entries[user.lower()][cnt] = dex_cnt2
+                    dex_entries[user][cnt] = dex_cnt2
 
         input_lines = [line.split("\t") for line in input_lines]
         for cnt, line in enumerate(input_lines):
@@ -211,6 +214,10 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
                 print(f"Warning: for entry {raw_entry[:2]} got varying number of line parts... should investigate...")
                 print(f"   had {len(input_lines)} after cleanup when checking this...")
         for line in input_lines:  # Iterate over each TL40 submission
+            # Skip header lines - no numbers at all in them
+            if not re.search("\d", "".join(line)):
+                continue
+
             # Match lines to column sets by length, aka number of columns
             # Note: above we already remove "done" (the check mark's alt text) and similar from start of lines
             found_colset = False
@@ -250,10 +257,10 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
                 submission_date = datetime.date(sub_year, sub_mon, sub_day)
             except:  # TODO exception types
                 submission_date = relative_date_string_to_date(submission_time, form_sub_time)
-            entries[user.lower()][submission_date] = \
+            entries[user][submission_date] = \
                     {field: get_val(val)  for field, val in zip(colset, line)} #column_names[0]}
             # Fill in extra columns
-            #entries[user.lower()] = {str(submission_date):
+            #entries[user] = {str(submission_date):
             #        { field: val for field, val  in zip(colset, line)} }#column_names[0]}
 
     return entries, dex_entries
@@ -307,6 +314,8 @@ def add_monthly_changes(entries, quantity_names):
         for idx, d in enumerate(dates):
             if idx == 0:
                 for stat in quantity_names:
+                    if stat == "Platinum Badges":  #TODO not implemented
+                        continue
                     entries[user][d][stat]["calculated_monthly_change"] = None
                     entries[user][d][stat]["calculated_with_tdelta"] = None
                 continue
@@ -320,6 +329,8 @@ def add_monthly_changes(entries, quantity_names):
                 #for stat in entries[user][d]:
                     #if stat in quantity_names:
                 for stat in quantity_names:
+                    if stat == "Platinum Badges":  #TODO not implemented
+                        continue
                     d_prev = dates[prev_month_idx]
                     tdelta = d - d_prev
                     tdelta = tdelta.days  # days, since we don't factor in seconds or microseconds
@@ -439,7 +450,7 @@ def to_increment_str(val):
     else:
         return f"{int(float(val)):,}"
 
-def render_monthly_html(entries, month=None, running_totals=None):
+def render_monthly_html(entries, month=None, running_totals=None, player_platinum_tracker=None):
     """Return a list of HTML divs, one per calendar month, and data derived from entries
 
     These are meant to be (one at a time) added to a parent HTML document.
@@ -447,11 +458,24 @@ def render_monthly_html(entries, month=None, running_totals=None):
     Args:
         entries:
         month:
-        running_totals: TBD
+        running_totals: None or a dictionary.
+        player_platinum_tracker: None or a dictionary
+
+    Returns:
+        content_div: HTML
+        running_totals: Updated dictionary
+        player_platinum_tracker: Updated dictionary
     """
     with open(report_fields_path, 'r') as fr:
         report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
+    # Note: we expect platinum badges as the last 'field' in this list
     report_fields = list(report_fields_dict.keys())
+
+    # Dictionary by badge type of the number needed to earn the platinum badge
+    plat_badge_thresholds = json.loads(open("platinum_counts.json", 'r').read())
+    all_fields = report_fields[:-1] + [x for x in plat_badge_thresholds.keys() if x not in list(report_fields)]
+    # Put Platinum Badge count last in our processing order
+    all_fields.append("Platinum Badges")
 
     # Get 12 months of data
     if month is None:
@@ -464,35 +488,114 @@ def render_monthly_html(entries, month=None, running_totals=None):
     monthname = calendar.month_name[month.month]
 
     if not running_totals:
-        running_totals = {}  # dict of dicts by stat: [ {user: all-time-total,  ... } ]
+        running_totals = {}  # dict of dicts by stat; subdicts are: [ {player: all-time-total,  ... } ]
+    if not player_platinum_tracker:
+        player_platinum_tracker = {}
+    for player in months_data.keys():
+        if player not in player_platinum_tracker.keys():
+            player_platinum_tracker[player] = {platname: False for platname in plat_badge_thresholds.keys()}
+    # Monthly increase count by user
+    player_platinum_increment = {player: 0
+                               for player in months_data.keys()}
 
     content_div = div(cls="content")
     with content_div:
-        for key in report_fields:
-            # TODO(cleanup) Don't need these two list comprehensions to duplicate so much of each other.
-            # Update the ALL-TIME data (Absolutely a weird spot to do this, but feels nice to overoptimize sometimes)
-            # Build data: For a report field: [ [month-reported-total, diff, player], ...]
-            data = [(months_data[player][key]["value"], months_data[player][key]["change"], player, months_data[player][key]["calculated_monthly_change"], months_data[player][key]["calculated_with_tdelta"]) for player in months_data.keys()
-                    if months_data[player][key]["value"] != None]
-            changedata = [(months_data[player][key]["value"],
-                           months_data[player][key]["change"],
-                           player,
-                           months_data[player][key]["calculated_monthly_change"],
-                           months_data[player][key]["calculated_with_tdelta"]
-                          )
-                          for player in months_data.keys()
-                          if months_data[player][key]["calculated_monthly_change"] != None]
+        for key in all_fields:
+            if key not in months_data["gertlex"] and key != "Platinum Badges":
+                print("Skipping", key)
+                continue
+
+            plat_badge_threshold = plat_badge_thresholds.get(key, 0)
 
             if key not in running_totals:
                 running_totals[key] = {}
 
+            # Note: Expect this key to be the last one in the for loop
+            if key == "Platinum Badges":
+                data = []
+                for player in player_platinum_tracker:
+                    count = sum([1 for platname in plat_badge_thresholds.keys()
+                                 if player_platinum_tracker[player][platname]])
+                    running_totals["Platinum Badges"][player] = count
+                    data.append([count,
+                                 0,
+                                 player,
+                                 0,
+                                 0])
+                # Changedata for Platinum badges
+                changedata = []
+                for player in player_platinum_increment.keys():
+                    # Also filter out new players, or first time adding type medals
+                    total_platinum_badges = sum(list(player_platinum_tracker[player].values()))
+                    if player_platinum_increment[player] != total_platinum_badges:
+                        if player_platinum_increment[player] >= N_TYPE_MEDALS:
+                            player_platinum_increment[player] -= N_TYPE_MEDALS
+                        changedata.append((player_platinum_tracker[player],
+                                           player_platinum_increment[player],
+                                           player,
+                                           player_platinum_increment[player],  # TODO month-averaged not implemented
+                                           player_platinum_increment[player]
+                                          ))
+
+            elif key not in report_fields:
+                # Typically this block is type medals; which we just want to see if the platinum threshold
+                # is crossed
+                if plat_badge_threshold > 0:
+                    for player in months_data.keys():
+                        # Some players didn't submit a row with type medal entries, so skip them here
+                        if key not in months_data[player]:
+                            continue
+
+                        # The value here can be None, e.g. for many folks' Wayfarer badge
+                        if months_data[player][key]["value"] \
+                                and months_data[player][key]["value"] > plat_badge_threshold:
+                            # TODO check if False -> True, and increment a platinum badge count change dict
+                            if not player_platinum_tracker[player][key]:
+                                player_platinum_increment[player] += 1
+                            player_platinum_tracker[player][key] = True
+            else:
+                # TODO(cleanup) Don't need these two list comprehensions to duplicate so much of each other.
+                # Update the ALL-TIME data (Absolutely a weird spot to do this, but feels nice to overoptimize sometimes)
+                # Build month's data: For a report field: [ [month-reported-total, diff, player], ...]
+                data = [(months_data[player][key]["value"],
+                         months_data[player][key]["change"],
+                         player,
+                         months_data[player][key]["calculated_monthly_change"],
+                         months_data[player][key]["calculated_with_tdelta"]
+                        ) for player in months_data.keys()
+                        if months_data[player][key]["value"] != None]
+                changedata = [(months_data[player][key]["value"],
+                               months_data[player][key]["change"],
+                               player,
+                               months_data[player][key]["calculated_monthly_change"],
+                               months_data[player][key]["calculated_with_tdelta"]
+                              )
+                              for player in months_data.keys()
+                              if months_data[player][key]["calculated_monthly_change"] != None]
+
+                # Update each player's platinum badge dictionary
+                if plat_badge_threshold > 0:
+                    for player in months_data.keys():
+                        # The months_data value here can be None, e.g. for many folks' Wayfarer badge
+                        if months_data[player][key]["value"] \
+                                and months_data[player][key]["value"] > plat_badge_threshold:
+                            # TODO check if False -> True, and increment a platinum badge count change dict
+                            if not player_platinum_tracker[player][key]:
+                                player_platinum_increment[player] += 1
+                            player_platinum_tracker[player][key] = True
+
+            # We don't generate HTML for all stats (e.g. type medals)
+            if key not in report_fields:
+                continue
+
+            # Update running totals (Note: for now, only for stats we report)
             for tup in data:
-                month_reported_tot = tup[0]
+                month_reported_total = tup[0]
                 player = tup[2]
                 if player not in running_totals[key]:
-                    running_totals[key][player] = month_reported_tot
-                elif month_reported_tot > running_totals[key][player]:
-                    running_totals[key][player] = month_reported_tot
+                    running_totals[key][player] = month_reported_total
+                elif month_reported_total > running_totals[key][player]:
+                    running_totals[key][player] = month_reported_total
 
             # Generate the HTML
             metric_row = div(cls="row")
@@ -504,7 +607,7 @@ def render_monthly_html(entries, month=None, running_totals=None):
                     a(img(width=50, title=keyname, alt=keyname, src=f"{keyname}.png"), href=f"#{keyname}")
 
                 # Total all-time
-                totals_data = list(running_totals[key].items())  # list of [user, total] pairs
+                totals_data = list(running_totals[key].items())  # list of [player, total] pairs
                 totals_data.sort(key=lambda x: -x[1])
                 div_table1 = div(cls="column")
                 with div_table1:
@@ -533,7 +636,7 @@ def render_monthly_html(entries, month=None, running_totals=None):
                         #[tr(td(cnt+2), td(item[2]), td(to_increment_str(item[3])))
                         #        for cnt, item in enumerate(changedata[1:20])] # normalized value #s 2-20
 
-    return content_div, running_totals
+    return content_div, running_totals, player_platinum_tracker
 
 
 def main(args):
@@ -567,6 +670,7 @@ def main(args):
     today_date = datetime.date.today()
     starting_date = datetime.date(day=1, year=today_date.year, month=today_date.month)
     running_totals = None  # will become a dict
+    player_platinum_tracker = None  # will become a dict
     for n in range(-11, 1):  # last 12 months, starting from 12 months ago
         newmonthdate = starting_date + relativedelta(months=n, days=-1)  # e.g. 10-31-2021
 
@@ -594,7 +698,10 @@ def main(args):
                     a("Submit survey data", href=SURVEY_LINK, cls="headerlinks")
 
             # Tables for each stat
-            content, running_totals = render_monthly_html(entries, newmonthdate, running_totals)
+            content, running_totals, player_platinum_tracker = render_monthly_html(entries,
+                                                                                   newmonthdate,
+                                                                                   running_totals,
+                                                                                   player_platinum_tracker)
             script(type='text/javascript', src='scroll2.js')
 
             # Tables for dex entry counts, only included for the most recent month
