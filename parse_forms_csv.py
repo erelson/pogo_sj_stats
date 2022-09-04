@@ -167,7 +167,8 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
     entries = {}  # dict by user (lowercase), to subdicts by "Response Date" list values
     dex_entries = {}  # dict by user (lowercase), to subdicts by "Response Date" list values  TODO
 
-    for lineno, raw_entry in enumerate(raw_entries[1:]):  # One copy-paste by a participant; possibly including multiple submissions to TL40.
+    # For each copy-paste by a participant; possibly including multiple submissions to TL40.
+    for lineno, raw_entry in enumerate(raw_entries[1:]):
         input_lines = raw_entry[2].splitlines()
         print(f"Num input lines in submission ({raw_entry[1]}):", len(input_lines))
         form_sub_time = raw_entry[0]
@@ -611,11 +612,12 @@ def render_monthly_html(entries, month=None, running_totals=None, player_platinu
                 totals_data.sort(key=lambda x: -x[1])
                 div_table1 = div(cls="column")
                 with div_table1:
+                    ranklength = 50 if keyname == "total_xp" else 20  # Treat total XP specially: show everyone!
                     table1 = table()
                     with table1:
                         th(f"{key} — Total all time", colspan=3)
                         tr(td(b("Rank")), td(b("Player")), td(b(key)))
-                        [tr(td(cnt+1), td(item[0]), td(f"{item[1]:,}")) for cnt, item in enumerate(totals_data[:20])]
+                        [tr(td(cnt+1), td(item[0]), td(f"{item[1]:,}")) for cnt, item in enumerate(totals_data[:ranklength])]
 
                 # Monthly gains rankings
                 #data.sort(key=lambda x: -x[1]) # raw +XXX values
