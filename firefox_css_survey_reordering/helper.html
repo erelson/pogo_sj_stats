@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PoGo Stats - Firefox re-ordering CSS generator</title>
+    <link href="style_firefox_helper.css" rel="stylesheet">
+    <meta charset="utf-8">
+  </head>
+<body>
+
+<h1>What is this?</h1>
+When filling out a monthly stats survey at tl40data.com, the order of "questions"
+is different from the order of badges, etc. in Pokemon Go.  If the order matched,
+you would spend less time filling out the survey!
+<br><br>
+Via a CSS stylesheet in Firefox, this can be achieved!
+
+<div class="row"><div class="column">
+<h1>Step 1:</h1>
+Copy and then paste the top row of values from <a href="https://tl40data.com">tl40data</a>: <input type="text" id="tl40data_text" value="Replace this">
+<button onclick="clearinputfunc()">Clear</button>
+</div><div class="column">
+    <img alt="what to select" src="imgs/firefox_survey_select.png"/>
+</div></div>
+<div class="row"><div class="column">
+<h1>Step 2:</h1>
+<p>Click the button to change the value of the text field.
+<button onclick="genCSS()">Generate</button>
+</p>
+
+
+<textarea id="generatedCSStext" name="generatedCSStext" rows="24" cols="100">
+    Your CSS snippet will appear here
+</textarea>
+</div><div class="column">
+    <!-- TODO -->
+</div></div>
+<div class="row"><div class="column">
+<h1>Step 3:</h1>
+Copy the generated text from above
+</div><div class="column">
+    TODO
+</div></div>
+<div class="row"><div class="column">
+<h1>Step 4:</h1>
+Add this customization to Firefow with the below detailed steps:
+</div><div class="column">
+    TODO
+</div></div>
+<h2>First-time setup steps:</h2>
+<div class="row"><div class="column">
+<h3>Enable userContent.css:</h3>
+In <b>about:config</b> ...
+</div><div class="column">
+    <br><img src="imgs/firefox_create  XXXX.png"/>
+</div></div>
+<h3>Open profile folder on your system:</h3>
+<div class="row"><div class="column">
+In the Firefox URL bar, open <b>about:profiles</b> in a new tab (alt + enter). Click <b>Open Directory</b> button of the <b>Local Directory</b> row.
+</div><div class="column">
+    <br><img src="imgs/firefox_profiles_url.png"/>
+    <br><img src="imgs/firefox_profiles_open_folder.png"/>
+</div></div>
+<div class="row"><div class="column">
+<h3>Create folder if needed:</h3>
+The folder TODO needs to exist. Create it if not.
+</div><div class="column">
+    <br><img src="imgs/firefox_create  XXXX.png"/>
+</div></div>
+<div class="row"><div class="column">
+<h2>Edit userContent.css (or create if needed):</h2>
+Create new file <b>userContent.css</b> if needed. Open the file, and paste the contents from above. (and save)
+</div><div class="column">
+    TODO
+</div></div>
+<div class="row"><div class="column">
+<h2>Restart Firefox!:</h2>
+Changes take effect when Firefox restarts.
+On the <b>about:profiles</b> page, click the <b>Restart normally...</b> button in the top right.
+</div><div class="column">
+    <br><img img="imgs/firefox_profiles_restart.png"/>
+</div></div>
+<div class="row"><div class="column">
+<h1>Step 5:</h1>
+Verify at <a href="https://tl40data.com/new">tl40data.com</a> that survey is in order of our platinum badges.
+
+</div><div class="column">
+    <!--TODO-->
+</div></div>
+
+<script>
+// NOTE: For ease of testing, to avoid XSS/CORS issues, test via editing over SCP
+// (e.g. vim scp://user@sftpsite:/path/to/script)
+
+function clearinputfunc(){
+    document.getElementById("tl40data_text").value = "";
+}
+
+function load_categories(user_data) {
+
+        // TODO(enhancement): Could just look for first column that's an integer value < 50
+        // and use that to figure out where to do the slice
+        var row_data = parse_pasted_entry(user_data).slice(3);
+
+        // given a div element id, get the column for that element's data in a tl40 row
+        var request = new XMLHttpRequest();
+        request.open("GET", "http://pogo.gertlex.com/survey_to_pogo_order_mapping.json", false);
+        request.send(null)
+        var column_lookup = JSON.parse(request.responseText);
+
+        var request = new XMLHttpRequest();
+        request.open("GET", "http://pogo.gertlex.com/medal_counts.json", false);
+        request.send(null)
+        var categories = JSON.parse(request.responseText);
+
+        document.getElementById("generatedCSStext").value = `
+@-moz-document url("https://tl40data.com/new") {
+   .mdl-card__floating-action-bar > .mdl-card__actions {
+           background: none;
+   }
+`;
+        var cnt = 0;
+        for (var key of Object.keys(categories)) {
+                var x = categories[key];
+                if (!(Object.keys(column_lookup).includes(x[4]))) {
+                    console.log("SKIPPING" + x[4] + Object.keys(column_lookup).includes(x[4]) + Object.keys(column_lookup)[x[4]]);
+                    cnt += 1;
+                    continue;
+                }
+                // Convert e.g. "10,000 (+123)" to "10000"
+                var userval = parseInt(row_data[column_lookup[x[4]]].split()[0].replaceAll(",", ""));
+                console.log(userval);
+
+                if (x[0] == 0) {
+                        var order = -400 + cnt;
+                }
+                else {
+                        var order = cnt;
+                        idx = 0;
+                        while (idx < 4 && userval > x[idx]) {
+                                order -= 100;
+                                idx += 1;
+                        }
+                }
+                //console.log("#main-panel .mdl-grid > #" + x[4] + "{ order: " + order + "; }");
+                document.getElementById("generatedCSStext").value += "    #main-panel .mdl-grid > #" + x[4] + "{ order: " + order + "; }\n";
+                cnt += 1;
+            }
+        document.getElementById("generatedCSStext").value += "\n}";
+        console.log(Object.keys(column_lookup));
+}
+
+function parse_pasted_entry(user_data) {
+
+        var input_lines = user_data.split('\n')[0];
+        // list of values
+        var line = input_lines.split("\t");
+        return line
+}
+
+
+function genCSS() {
+    // Load medals thresholds JSON. Done with requests
+    var request = new XMLHttpRequest();
+    request.open("GET", "http://pogo.gertlex.com/medal_counts.json", false);
+    request.send(null)
+    var jdata = JSON.parse(request.responseText);
+
+    data = document.getElementById("tl40data_text").value;
+    load_categories(data);
+}
+</script>
+
+
+
+</body>
+</html>
+

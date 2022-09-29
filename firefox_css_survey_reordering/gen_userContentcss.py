@@ -96,7 +96,7 @@ for cnt, key in enumerate(categories):
         #print("SKIPPING:", x[4])
         continue  # Skip some things that aren't in the survey, like Alola and Hisui dexes
     try:
-        val = int(row_data[column_lookup[x[4]]].split()[0].replace(",",""))
+        val = int(row_data[column_lookup[x[4]]].split()[0].replace(",", ""))
     except ValueError:
         #print("Got empty value for", key, column_lookup[x[4]], x[4], row_data[column_lookup[x[4]]], "; Assuming 0.")
         val = 0
