@@ -36,7 +36,8 @@ DAY_TO_INT = dict(zip(calendar.day_name, range(7)))
 SURVEY_LINK = "https://docs.google.com/forms/d/e/1FAIpQLScOSB49nQMQDIKamSqdLwCL65AddprQJF7Htm5R9J03OjOESw/viewform?usp=sf_link"
 
 N_DEX_ENTRIES = 9
-DEX_NAMES = ["Purified", "Shadow", "Perfect", "3 Stars", "Shiny 3 Stars", "Shiny", "Lucky", "Event", "Mega"]
+# Note that the survey ignores the regular dex count. Our "Sum of All" doesn't include this, which is rather arbitrary.
+DEX_NAMES = ["Purified", "Shadow", "Perfect", "3 Stars", "Shiny 3 Stars", "Shiny", "Lucky", "Event", "Mega", "Sum of All Dex Counts"]
 N_TYPE_MEDALS = 18
 
 
@@ -469,6 +470,8 @@ def render_monthly_html(entries, month=None, running_totals=None, player_platinu
         content_div: HTML
         running_totals: Updated dictionary
         player_platinum_tracker: Updated dictionary
+        aborted (bool): If True, did not have (valid) data to render for the month. Other
+            return values may simply be None, and should not be used
     """
     with open(report_fields_path, 'r') as fr:
         report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
@@ -491,6 +494,9 @@ def render_monthly_html(entries, month=None, running_totals=None, player_platinu
     months_data = find_near_date(entries, month)
     monthname = calendar.month_name[month.month]
     month_year = f" ({monthname} {month.year})"
+
+    if len(months_data.keys()) == 0:
+        return None, None, None, True
 
     if not running_totals:
         running_totals = {}  # dict of dicts by stat; subdicts are: [ {player: all-time-total,  ... } ]
@@ -650,7 +656,7 @@ def render_monthly_html(entries, month=None, running_totals=None, player_platinu
                         #[tr(td(cnt+2), td(item[2]), td(to_increment_str(item[3])))
                         #        for cnt, item in enumerate(changedata[1:20])] # normalized value #s 2-20
 
-    return content_div, running_totals, player_platinum_tracker
+    return content_div, running_totals, player_platinum_tracker, False
 
 
 def main(args):
@@ -712,16 +718,22 @@ def main(args):
                     a("Submit survey data", href=SURVEY_LINK, cls="headerlinks")
 
             # Tables for each stat
-            content, running_totals, player_platinum_tracker = render_monthly_html(entries,
-                                                                                   newmonthdate,
-                                                                                   running_totals,
-                                                                                   player_platinum_tracker)
+            content, running_totals, player_platinum_tracker, aborted = render_monthly_html(entries,
+                                                                                            newmonthdate,
+                                                                                            running_totals,
+                                                                                            player_platinum_tracker)
+            if aborted:
+                print(f"Skipped month ending on: {newmonthdate} (render_monthly_html aborted; no or invalid data for month)")
+                continue
             script(type='text/javascript', src='scroll2.js')
 
             # Tables for dex entry counts, only included for the most recent month
             if n == 0:
-                # Flatten the dict to a list, with player at the end; None -> 0 for sort purposes
-                dex_lists = [[val or 0 for val in values] + [player] for player, values in dex_entries.items()]
+                # Flatten the dex_entries dict to a list of sublists containing:
+                # a) the individual dex counts (None -> 0 for sort purposes)
+                # b) Sum of all dex counts
+                # c) player name at the end
+                dex_lists = [ [val or 0 for val in values] + [sum([val or 0 for val in values])] + [player] for player, values in dex_entries.items()]
                 for idx, dexname in enumerate(DEX_NAMES):
                     dex_lists.sort(key=lambda x: x[idx], reverse=True)
                     table_data = [(user_dex[-1], user_dex[idx]) for user_dex in dex_lists[:20] if user_dex[idx] > 0]
