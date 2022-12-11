@@ -57,6 +57,8 @@
  "Mega Evolution Guru": [1,24,36,46,"id_badge_pokedex_entries_mega_dex__card"],
  "Friend Finder": [1,10,20,50,"id_badge_referral__card"],
  "Raid Expert": [1,50,200,500,"id_badge_raid_expert__card"],
+ "Tiny Pokémon Collector": [5,25,100,500,"TODO"],
+ "Jumbo Pokémon Collector": [5,25,100,500,"TODO"],
  "Schoolkid": [10,50,200,2500,"id_badge_type_normal__card"],
  "Black Belt": [10,50,200,2500,"id_badge_type_fighting__card"],
  "Bird Keeper": [10,50,200,2500,"id_badge_type_flying__card"],
