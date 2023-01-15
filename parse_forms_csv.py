@@ -304,7 +304,12 @@ def get_val(valstring):
 
 
 def add_monthly_changes(entries, quantity_names):
-    """Add derived fields to all survey entries for monthly deltas"""
+    """Add derived fields to all survey entries for monthly deltas
+
+    Args:
+        entries: List?
+        quantity_names: List?
+    """
     for user in entries:
         try:
             dates = sorted(entries[user])
@@ -320,8 +325,12 @@ def add_monthly_changes(entries, quantity_names):
                 for stat in quantity_names:
                     if stat == "Platinum Badges":  #TODO not implemented
                         continue
-                    entries[user][d][stat]["calculated_monthly_change"] = None
-                    entries[user][d][stat]["calculated_with_tdelta"] = None
+                    try:
+                        entries[user][d][stat]["calculated_monthly_change"] = None
+                        entries[user][d][stat]["calculated_with_tdelta"] = None
+                    except KeyError:
+                        # entries in report_fields_1.json that are not used yet?
+                        continue
                 continue
             else:
                 prev_month_idx = idx - 1
@@ -351,7 +360,11 @@ def add_monthly_changes(entries, quantity_names):
                         current_month_length = calendar.monthrange(d.year, d.month)[1]
                     scale_factor = current_month_length / tdelta
 
-                    current = entries[user][d][stat]["value"]
+                    try:
+                        current = entries[user][d][stat]["value"]
+                    except KeyError:
+                        # entries in report_fields_1.json that are not used yet?
+                        continue
                     previous = entries[user][d_prev][stat]["value"]
                     if current is None or previous is None:
                         entries[user][d][stat]["calculated_monthly_change"] = None
