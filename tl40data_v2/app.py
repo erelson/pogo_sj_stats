@@ -139,14 +139,8 @@ def get_survey_data_in_survey_order(session, user=None):
 
         # From CSS stuff, for reference...
         #print(f"    #main-panel .mdl-grid > #{x[4]} " + "{ order: " + f"{order}; " + "}")
-        #stats_list.append([idx, s])
-        # TODO broken 3-12-23
-        #stats_list[key][0] += order_offset
-        #stats_list[key][2] = previousval
-        #Fixed by renaming?
-        print(stat_vals[key])
-        stat_vals[key][0] = int(stat_vals[key][0]) + order_offset
-        stat_vals[key][2] = previousval
+        stats_list[cnt][0] += order_offset
+        stats_list[cnt][2] = previousval
 
     # Sort things!
 
@@ -187,7 +181,7 @@ def survey_gen(stats_list, formclass):
         A class with attributes set, ready to be instantiated.
     """
     statlist = []  # lookup of attribute names on the FormClass which hold Field objects
-    for stat in stats_list:  # in order already
+    for order, stat, previous_val in stats_list:  # in order already
         # TODO
         placeholder = 123
         if stat.name == 'Trainer Level':
@@ -209,7 +203,7 @@ def survey_gen(stats_list, formclass):
                                  # TODO move this image part to a setatrr call?
                                  #image="imgs/" + stat.icon + ".png",  # accessed with statlist[i].kwargs['image']
                                  render_kw={"inputmode": "numeric", "type": "number",
-                                     "placeholder": placeholder},
+                                     "placeholder": previous_val},
                                  )
         setattr(formclass, stat.icon, field)  # using icon because name has spaces in it
         #statlist.append(field)  # Problem is this is the unbound field, DUH
