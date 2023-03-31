@@ -151,7 +151,7 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
 
     Returns:
         entries: dict by user (lowercase), to subdict by "Response Date" list values.
-        dex_entries: dict by user (lowercase), to subdicts by "Response Date" list values
+        dex_entries: dict by user (lowercase), to subdicts by "Response Date" (datetime.date) list values
     """
     # Load columns, if needed.
     # This feature lets us support old entries on the google form, in case tl40 adds additional columns later.
@@ -262,7 +262,7 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
             except:  # TODO exception types
                 submission_date = relative_date_string_to_date(submission_time, form_sub_time)
             entries[user][submission_date] = \
-                    {field: get_val(val)  for field, val in zip(colset, line)} #column_names[0]}
+                    {field: get_val_dict(val) for field, val in zip(colset, line)}
             # Fill in extra columns
             #entries[user] = {str(submission_date):
             #        { field: val for field, val  in zip(colset, line)} }#column_names[0]}
@@ -270,7 +270,7 @@ def parse_csv_to_clean_submissions(fileobj, column_names=None):
     return entries, dex_entries
 
 
-def get_val(valstring):
+def get_val_dict(valstring):
     """A bunch of lazy parsing logic for contents of each "table cell" copied from tl40data.com.
 
     Categories:
@@ -307,7 +307,7 @@ def add_monthly_changes(entries, quantity_names):
     """Add derived fields to all survey entries for monthly deltas
 
     Args:
-        entries: List?
+        entries: dict by user of dict by date of dict by stat of dict of values
         quantity_names: List?
     """
     for user in entries:
