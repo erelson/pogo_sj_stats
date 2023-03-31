@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Survey page</title>
+    </head>
+    <body>
+{% from "_formhelpers.html" import render_field %}
+<form method=post>
+  <dl>
+      <li>{{ render_field(form.trainername) }}</li>
+   {% for i in form.statlist %}
+   <li>{{ render_field(form.__getattribute__(i)) }}</li>
+   {# <li><img src="{{ i }}.png">{{ render_field(form.__getattribute__(i)) }}</li> #}
+   {%endfor%}
+  </dl>
+  <p><input type=submit value="Submit stats">
+</form>
+<script type="text/javascript">
+
+// prevent scrolling in all number entry-boxes
+// https://stackoverflow.com/a/38589039
+document.addEventListener("wheel", function(event) {
+    if (document.activeElement.type === "number"){
+    document.activeElement.blur();
+  }
+});
+
+
+
+  </script>
+    </body>
+</html>
