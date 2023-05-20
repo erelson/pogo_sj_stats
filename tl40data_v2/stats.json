@@ -66,7 +66,7 @@
       ["Integer",100,1000,2000,50000,-1,true,true,"pokestops_visited"],
    "Sightseer":
       ["Integer",10,100,1000,2000,-1,true,true,"pokestops_visited_unique"],
-   "Fisherman":
+   "Fisher":
       ["Integer",3,50,300,1000,-1,true,true,"big_magikarp"],
    "Battle Girl":
       ["Integer",10,100,1000,4000,-1,true,true,"battle_attack_won"],
@@ -118,7 +118,7 @@
       ["Integer",1,5,20,50,-1,true,true,"ultra_hero"],
    "Best Buddy":
       ["Integer",1,10,100,200,-1,true,true,"best_buddy"],
-   "Wayfarer Agreements":
+   "Wayfarer":
       ["Integer",50,500,1000,1500,-1,true,true,"wayfarer_agreements"],
    "Kalos":
       ["Integer",5,25,50,72,-1,true,true,"pokedex_entries_gen6"],
