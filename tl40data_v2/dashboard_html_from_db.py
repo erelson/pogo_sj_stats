@@ -6,24 +6,18 @@
 # Standard library
 from argparse import ArgumentParser
 import calendar
-import csv
 import datetime
 import json
 import os
 import random
-import re
 import shutil
 
 # Third party
-from pytz import timezone
 import dominate
 from dominate.tags import a, b, img, link, option, select, table, tr, td, th, div, script, meta, sup
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
-# Custom
-from download_google_sheets_csv import main as get_csv
 
 # Local
 from tables import Stat, Response, Trainer
@@ -46,8 +40,18 @@ SURVEY_LINK = "http://pogo.gertlex.com/survey"
 
 N_DEX_ENTRIES = 9
 # Note that the survey ignores the regular dex count. Our "Sum of All" doesn't include this, which is rather arbitrary.
-DEX_NAMES = ["Purified", "Shadow", "Perfect", "3 Stars", "Shiny 3 Stars", "Shiny", "Lucky", "Event", "Mega", "Sum of All Dex Counts"]
+DEX_NAMES = ["Unique Species Caught",
+             "Special Dex: Purified",
+             "Special Dex: Shadow",
+             "Special Dex: Perfect",
+             "Special Dex: 3 Stars",
+             "Special Dex: Shiny 3 Stars",
+             "Special Dex: Shiny",
+             "Special Dex: Lucky",
+             "Special Dex: Event/Costume",
+             "Mega/Primal Evolution Guru"]#, "Special Dex: Sum of All Dex Counts"]
 N_TYPE_MEDALS = 18
+STATNAME_DEX_SUM = "Sum of All Dex Counts"
 
 
 quips = [
@@ -155,130 +159,6 @@ def relative_date_string_to_date(datestr, ref_date_str):
         return None
 
 
-#def parse_csv_to_clean_submissions(fileobj, column_names=None):
-#    """
-#
-#    Returns:
-#        entries: dict by user (lowercase), to subdict by "Response Date" list values.
-#        dex_entries: dict by user (lowercase), to subdicts by "Response Date" list values
-#    """
-#    # Load columns, if needed.
-#    # This feature lets us support old entries on the google form, in case tl40 adds additional columns later.
-#    if column_names is None:
-#        column_names = get_column_names(column_names_files)
-#    print("Have column sets to match to, with lengths:")
-#    for colset in column_names:
-#        print("-", len(colset))
-#
-#    raw = csv.reader(fileobj)
-#    raw_entries = [row for row in raw]
-#    # TODO(enhancement) change from list to transformed list that matches latest survey columns...
-#    # When tl40 adds new survey fields, we'll have additional columns, but still want to handle old pasted data.
-#    entries = {}  # dict by user (lowercase), to subdicts by "Response Date" list values
-#    dex_entries = {}  # dict by user (lowercase), to subdicts by "Response Date" list values  TODO
-#
-#    # For each copy-paste by a participant; possibly including multiple submissions to TL40.
-#    for lineno, raw_entry in enumerate(raw_entries[1:]):
-#        input_lines = raw_entry[2].splitlines()
-#        if len(input_lines) == 0:
-#            continue
-#        print(f"Num input lines in submission ({raw_entry[1]}):", len(input_lines))
-#        form_sub_time = raw_entry[0]
-#        user = raw_entry[1].lower().strip()
-#
-#        if user not in entries:
-#            entries[user] = {}
-#        # NOTE: dex entry counts are different from survey responses of tl40 data because there's
-#        # only one "row" per submission (while we might have multiple tl40 rows in one response)
-#        if user not in dex_entries:
-#            dex_entries[user] = [None] * N_DEX_ENTRIES
-#        dex_data = [int(val) if val else None for val in raw_entry[3:12]]  # 9 dex entries we started recording
-#        for cnt, (dex_cnt, dex_cnt2) in enumerate(zip(dex_entries[user], dex_data)):
-#            if dex_cnt2:
-#                if dex_cnt is None or dex_cnt2 > dex_cnt:
-#                    dex_entries[user][cnt] = dex_cnt2
-#
-#        input_lines = [line.split("\t") for line in input_lines]
-#        for cnt, line in enumerate(input_lines):
-#            if len(line) == 1:  # 8x spaces instead of tabs?
-#                input_lines[cnt] = line[0].split("        ")
-#        # Filter out first-column things, as well as "Survey History" and leading empty strings
-#        for idx in range(len(input_lines)):
-#            while input_lines[idx] and input_lines[idx][0].strip() in ["edit", "done", "warning", "verified_user", "Survey History", '']:
-#                input_lines[idx] = input_lines[idx][1:]
-#            if len(input_lines[idx]) == 0:
-#                continue
-#            while input_lines[idx][-1] == '':
-#                input_lines[idx] = input_lines[idx][:-1]
-#        # Filter out empty lines...
-#        input_lines = [inp for inp in input_lines if inp]
-#
-#        # Toss truncated start/end lines from copy-paste variation
-#        if len(input_lines) > 2:
-#            # Remove truncated last line
-#            if len(input_lines[1]) > len(input_lines[-1]):
-#                input_lines = input_lines[:-1]
-#            # Remove truncated first line
-#            if len(input_lines[0]) < len(input_lines[-1]):
-#                input_lines = input_lines[1:]
-#            first_len = len(input_lines[0])
-#            # Check consistent length of remaining "full" lines
-#            if len(input_lines) > 1 and not all(first_len == len(line) for line in input_lines[1:]):
-#                print(f"Warning: for entry {raw_entry[:2]} got varying number of line parts... should investigate...")
-#                print(f"   had {len(input_lines)} after cleanup when checking this...")
-#        for line in input_lines:  # Iterate over each TL40 submission
-#            # Skip header lines - no numbers at all in them
-#            if not re.search("\d", "".join(line)):
-#                continue
-#
-#            # Match lines to column sets by length, aka number of columns
-#            # Note: above we already remove "done" (the check mark's alt text) and similar from start of lines
-#            found_colset = False
-#            for colset in column_names:  # Iterate over known line lengths (i.e. number of columns)
-#                if len(line) == len(colset):
-#                    found_colset = True
-#                    break
-#                # TODO validate line further
-#            # Recovery: Possibly handle partial copying of lines, where user both did not fill in catch medal counts,
-#            # and selected some of those unfilled ('---') columns.
-#            oldline = None  # line before we drop trailing '---' columns
-#            if not found_colset:
-#                oldline = line
-#                while line[-1] == '---':
-#                    line = line[:-1]
-#                for colset in column_names:  # Iterate over known line lengths (i.e. number of columns)
-#                    if len(line) == len(colset):
-#                        found_colset = True
-#                        break
-#            if not found_colset:
-#                print(f"!!!!!!!!!!!Was unable to find colset for line {lineno+2} ({raw_entry[1]})...", len(line))  # TODO more debug output
-#                if oldline:
-#                    print("Full line parts:")
-#                    print(oldline)
-#                    print(f"Line parts after stripping '---' (resulting in {len(line)} remaining parts)")
-#                print(line)
-#                continue
-#
-#            # Skipping header lines, i.e. lines that match the colset's column names
-#            if colset[0] == line[0].strip(): # lazy but maybe we need to fix this
-#                continue
-#            # ???
-#            submission_time = line[0]
-#
-#            try:
-#                sub_mon, sub_day, sub_year = [int(part) for part in submission_time.split()[0].split("/")]
-#                submission_date = datetime.date(sub_year, sub_mon, sub_day)
-#            except:  # TODO exception types
-#                submission_date = relative_date_string_to_date(submission_time, form_sub_time)
-#            entries[user][submission_date] = \
-#                    {field: get_val(val)  for field, val in zip(colset, line)} #column_names[0]}
-#            # Fill in extra columns
-#            #entries[user] = {str(submission_date):
-#            #        { field: val for field, val  in zip(colset, line)} }#column_names[0]}
-#
-#    return entries, dex_entries
-
-
 def get_val(valstring):
     """A bunch of lazy parsing logic for contents of each "table cell" copied from tl40data.com.
 
@@ -327,9 +207,11 @@ def add_monthly_changes(entries, quantity_names):
             print(user)
             print(entries[user])
             continue
-        print(user)
-        print(dates)
-        print(len(dates))
+        # Submissions debug
+        #print(user)
+        #print(dates)
+        #print(len(dates))
+
         # Case: first submission for user
         # Case: only have one tl40 submission for user... set all changes to None
         # Case: preceding submission exists... normalize changes to length of month
@@ -491,11 +373,12 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
     """
     with open(report_fields_path, 'r') as fr:
         report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
-    # Note: we expect platinum badges as the last 'field' in this list
+    # Note: we want platinum badges as the last 'field' in this list, which we do below
     report_fields = list(report_fields_dict.keys())
 
     # Dictionary by badge type of the number needed to earn the platinum badge
     plat_badge_thresholds = json.loads(open(platinum_counts_path, 'r').read())
+    # Drop the platinum badge count from end of the list, then re-add it after appending other fields (like what?)
     all_fields = report_fields[:-1] + [x for x in plat_badge_thresholds.keys() if x not in list(report_fields)]
     # Put Platinum Badge count last in our processing order
     all_fields.append("Platinum Badges")
@@ -519,18 +402,23 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
         running_totals = {}  # dict of dicts by stat; subdicts are: [ {player: all-time-total,  ... } ]
     if not player_platinum_tracker:
         player_platinum_tracker = {}
+    # Dict of {player: dex sum} used for "Sum of All Dex Counts"
+    dex_sums = {}
+    # Add trainers that are new this month to the platinum badge status tracker
     for player in months_data.keys():
         if player not in player_platinum_tracker.keys():
             player_platinum_tracker[player] = {platname: False for platname in plat_badge_thresholds.keys()}
-    # Monthly increase count by user
+    # Monthly increase counts by user
+    player_dex_sum_increment = {player: 0
+                                for player in months_data.keys()}
     player_platinum_increment = {player: 0
                                  for player in months_data.keys()}
 
     content_div = div(cls="content")
     with content_div:
         for stat in all_fields:
-            # Debug... TODO revisit with note why
-            if stat not in months_data["gertlex"] and stat != "Platinum Badges":
+            # Skip stats that are defined but not yet recorded by survey
+            if stat not in months_data["gertlex"] and stat != "Platinum Badges" and stat != STATNAME_DEX_SUM:
                 print("Skipping", stat)
                 continue
 
@@ -552,11 +440,15 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                                  0,
                                  0])
                 # Changedata for Platinum badges
+                # TODO in next comment line, last two may be swapped.
+                # list of tuples of: new val, ???, player, raw change, time averaged change
                 changedata = []
                 for player in player_platinum_increment.keys():
                     # Also filter out new players, or first time adding type medals
                     total_platinum_badges = sum(list(player_platinum_tracker[player].values()))
+                    # Only set changedata for players that had non-zero change
                     if player_platinum_increment[player] != total_platinum_badges:
+                        # Crude: detect first time reporting type medals
                         if player_platinum_increment[player] >= N_TYPE_MEDALS:
                             player_platinum_increment[player] -= N_TYPE_MEDALS
                         changedata.append((player_platinum_tracker[player],
@@ -564,6 +456,34 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                                            player,
                                            player_platinum_increment[player],  # TODO month-averaged not implemented
                                            player_platinum_increment[player]
+                                           ))
+
+            elif stat == STATNAME_DEX_SUM:
+                #for player, dex_sum in dex_sums.items():
+                #    running_totals[STATNAME_DEX_SUM][player] = [dex_sum, month_year]
+                # TODO in next comment line, last two may be swapped.
+                # list of tuples of: new val, ???, player, raw change, time averaged change
+                changedata = []
+                # fill in running_totals and changedata
+                for player, dex_sum in dex_sums.items():
+                    # Skip for new players who have no running total
+                    if player not in running_totals[STATNAME_DEX_SUM]:
+                        running_totals[STATNAME_DEX_SUM][player] = [dex_sum, month_year]
+                        continue
+                    change = dex_sum - running_totals[STATNAME_DEX_SUM][player][0]
+                    running_totals[STATNAME_DEX_SUM][player] = [dex_sum, month_year]
+                    # Also filter out new players, or first time adding type medals
+                    #total_platinum_badges = sum(list(player_platinum_tracker[player].values()))
+                    # Only set changedata for players that had non-zero change
+                    if change:
+                    #if player_dex_sum_increment[player] != dex_sum:
+                        #if player_dex_sum_increment[player] >= N_TYPE_MEDALS:
+                        #    player_dex_sum_increment[player] -= N_TYPE_MEDALS
+                        changedata.append((dex_sum,
+                                           player_dex_sum_increment[player],
+                                           player,
+                                           change,  # TODO month-averaged not implemented
+                                           change
                                            ))
 
             elif stat not in report_fields:
@@ -593,6 +513,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                          months_data[player][stat]["calculated_with_tdelta"]
                          ) for player in months_data.keys()
                         if months_data[player][stat]["value"] != None]
+                # list of tuples of: new val, ???, player, raw change, time averaged change
                 changedata = [(months_data[player][stat]["value"],
                                'null',  #months_data[player][stat]["change"],
                                player,
@@ -606,6 +527,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                 if plat_badge_threshold > 0:
                     for player in months_data.keys():
                         # The months_data value here can be None, e.g. for many folks' Wayfarer badge
+                        # (TODO the above comment may mostly apply to tl40data surveys?)
                         if months_data[player][stat]["value"] \
                                 and months_data[player][stat]["value"] > plat_badge_threshold:
                             # TODO check if False -> True, and increment a platinum badge count change dict
@@ -625,6 +547,9 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                     running_totals[stat][player] = [month_reported_total, month_year]
                 elif month_reported_total > running_totals[stat][player][0]:  # or update if higher
                     running_totals[stat][player] = [month_reported_total, month_year]
+
+                if stat in DEX_NAMES:
+                    dex_sums[player] = dex_sums.get(player, 0) + month_reported_total
 
             # Generate the HTML
             metric_row = div(cls="row")
@@ -680,7 +605,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
 
 def load_entries_from_db():
     """Read all entries from db into a giant dictionary
-    
+
     Returns:
         entries: dict by user (lowercase), to subdict by "Response Date" (datetime.date) list values, containing
             dictionary of stat values.
@@ -701,6 +626,8 @@ def load_entries_from_db():
     responses = session.query(Response).all()
     for response in responses:
         user = users_lookup[response.trainer_id]
+        if user == "test" or user == "*_-#test":
+            continue
         if user not in entries:
             entries[user] = {}
 
@@ -711,7 +638,7 @@ def load_entries_from_db():
 
         entries[user][entry_date] = Stat.unpack_strdata(response.strdata, session)
 
-    return entries 
+    return entries
 
 
 def main(args):
@@ -720,33 +647,15 @@ def main(args):
         report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
     report_fields = list(report_fields_dict.keys())
 
-    # If not given a CSV, try to get CSV by treating args.file as a keyfile
-    #if not args.file.endswith(".csv"):
-    #    csvfilename = "latest_stats_responses.csv"
-    #    try:
-    #        get_csv(keyfile=args.file, save_file=csvfilename)
-    #    except Exception as e:
-    #        print("Got an exception while trying to auto-obtain .csv file:")
-    #        print(e)
-    #        print("Make sure you pass in either a .csv file or a keyfile for Google Docs API.")
-
-
-    # Read CSV file
-    #with open(args.file, 'r') as fr:
-    #    entries, dex_entries = parse_csv_to_clean_submissions(fr)
-
-    # TODO load entries from database...
     entries = load_entries_from_db()
 
     # Calculate monthly diffs
     add_monthly_changes(entries, list(report_fields_dict.keys()))
 
-    #render_monthly(entries)
-
     # Generate HTML for each month
     today_date = datetime.date.today()
     starting_date = datetime.date(day=1, year=today_date.year, month=today_date.month)
-    #starting_date = datetime.date(day=1, year=2022, month=2)
+    #starting_date = datetime.date(day=1, year=2022, month=2)  # Manual override for testing
     running_totals = None  # will become a dict
     player_platinum_tracker = None  # will become a dict
     for n in range(-11, 1):  # last 12 months, starting from 12 months ago
@@ -786,27 +695,6 @@ def main(args):
                       "no or invalid data for month)")
                 continue
             script(type='text/javascript', src='static/scroll2.js')
-
-            # TODO delete; dex entries are now first-class
-            # Tables for dex entry counts, only included for the most recent month
-            #if n == 0:
-            #    # Flatten the dex_entries dict to a list of sublists containing:
-            #    # a) the individual dex counts (None -> 0 for sort purposes)
-            #    # b) Sum of all dex counts
-            #    # c) player name at the end
-            #    dex_lists = [[val or 0 for val in values] + [sum([val or 0 for val in values])]
-            #                 + [player] for player, values in dex_entries.items()]
-            #    for idx, dexname in enumerate(DEX_NAMES):
-            #        dex_lists.sort(key=lambda x: x[idx], reverse=True)
-            #        table_data = [(user_dex[-1], user_dex[idx]) for user_dex in dex_lists[:20] if user_dex[idx] > 0]
-
-            #        div_table2 = div(cls="todo")
-            #        with div_table2:
-            #            table2_div = table()
-            #            with table2_div:
-            #                th(f"Pokédex: {dexname}", colspan=3, cls=dexname.replace("3", "Three").replace(" ", ""))
-            #                tr(td(b("Rank")), td(b("Player")), td(b(dexname)))
-            #                [tr(td(cnt+1), td(item[0]), td(item[1])) for cnt, item in enumerate(table_data)]
 
         date_string = str(newmonthdate).rsplit("-", maxsplit=1)[0]
         print("Generated page for", date_string)
