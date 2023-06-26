@@ -106,6 +106,7 @@ class Trainer(Base):
     ## Schema
     id = Column(Integer, primary_key=True)
     name = Column(String)#, unique=True)
+    proper_name = Column(String)#, unique=True)
     start_date = Column(String, nullable=True)
     # 2-26: implementing One to Many, bidirectionally
     responses = relationship("Response", back_populates="trainer")  # Unsure about the back_populates; came from copilot
@@ -181,6 +182,7 @@ class Response(Base):
         #print(list(response_values.keys()))
         #print(len(list(response_values.keys())))
         for k, v in response_values.items():
+            # Presently, everything but the trainername is a numeric survey value
             if k == "trainername":
                 continue
             stat_data_dict[k] = v
@@ -193,22 +195,29 @@ class Response(Base):
         # Response DB object
         if not timestamp:
             timestamp = str(datetime.datetime.now().timestamp())
-        trainer = response_values["trainername"]
+        trainer_proper_name = response_values["trainername"]
+        trainer = trainer_proper_name.lower()
         trainer_obj = session.query(Trainer).filter(Trainer.name == trainer).first()
         if trainer_obj is None:
-            trainer_obj = Trainer(name=trainer, start_date=timestamp)
+            trainer_obj = Trainer(name=trainer, proper_name=trainer_proper_name, start_date=timestamp)
             session.add(trainer_obj)
             session.flush()  # copilot
             session.commit()  # copilot
-        response = cls(trainer=trainer_obj, timestamp=timestamp, strdata=strdata, revision=1)
+        response = cls(trainer_id=trainer_obj.id, timestamp=timestamp, strdata=strdata, revision=1)
         print(trainer_obj)
 
-        if trainer_obj.newest_response_date is None or timestamp > float(trainer_obj.newest_response_date):
-            trainer_obj.newest_response_date = timestamp
-            # Sanity check: does response object have an id at this point? maybe do after add()?
-            trainer_obj.newest_response = response.id
-
+        # Add response object, so we can get the id
         session.add(response)
+
+        # Set trainer's newest_response, and use whichever name capitalization they gave this time
+        print("existing newest response date:", trainer_obj.newest_response_date)
+        print("Do timestamp types match?:", type(timestamp), type(trainer_obj.newest_response_date))
+        print("  and is it equivalen to None in python?", trainer_obj.newest_response_date is None)
+        if trainer_obj.newest_response_date is None or timestamp > trainer_obj.newest_response_date:
+            trainer_obj.newest_response_date = timestamp
+            trainer_obj.newest_response = response.id
+        trainer_obj.proper_name = trainer_proper_name
+
         session.add(trainer_obj)
         session.flush()
         session.commit()

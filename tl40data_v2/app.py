@@ -5,6 +5,7 @@
 # Standard library
 import argparse
 import json
+import sys
 
 # Third party
 from flask import request, flash, redirect, url_for, send_from_directory
@@ -70,34 +71,24 @@ def get_survey_data_in_survey_order(session, user=None):
                                 **dict(zip(stat_keys, stat_vals[stat_name]))),
                            0,  # previous value
                            ])
-    #if not stats:
-    #    stats = get_stats_info(session)
-    #nstats = len(stats)
 
     ## TODO user data will eventually factor in here too
-    # TODO I think this was for ... stuff before i just loaded json for now
-    #for stat in stats:
-    #    # TODO if user not None, diff fields
-    #    stats_list.append([stat.name,
-    #                       stat.img,
-    #                       stat.previous,
-    #                       stat.maximum,
-    #                       stat.order_idx])
     trainer = None
     trainer_data = {}
     if user:
         try:
-            trainer = session.query(Trainer).filter_by(name=user).one()
+            trainer = session.query(Trainer).filter_by(name=user.lower()).one()
         except NoResultFound:
             # The user doesn't have a submission yet, so blank data.
             pass
     if trainer:
-        try:
-            # trainer_data will be a dict by stat name of values from previous response
-            # QUESTION how do we make sure trainer_data keys match with the json keys?
-            trainer_data = trainer.get_newest_response()
-        except NoResultFound:
-            trainer_data = None
+        # trainer_data will be a dict by stat name of values from previous response
+        # stderr is used ... why?
+        trainer_data = trainer.get_newest_response(session)  # May be None for newly added trainer
+        if trainer_data is None:
+            print(f"Got NO data for trainer {user}..", file=sys.stderr)
+        else:
+            print(f"Got trainer {user} data.. non-None? {trainer_data != None}", file=sys.stderr)
 
     #if trainer_data:
     # Calculate offsets for each stat category
@@ -213,7 +204,7 @@ def survey_gen(stats_list, formclass):
     # https://gaming.stackexchange.com/a/281007
     trainername = StringField('Trainer Name',
                               validators=[validators.Length(min=4, max=15),
-                                          validators.Regexp(regex="^[\S\d]+$",
+                                          validators.Regexp(regex="^[\w\d]+$",
                                                             message="Trainer name can only be letters and numbers"),
                                   ])
     formclass.trainername = trainername
