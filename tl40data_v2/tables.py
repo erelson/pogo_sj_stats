@@ -122,15 +122,21 @@ class Trainer(Base):
     def create_trainer(self, name):
         pass
 
-    def get_newest_response(self):
+    def get_newest_response(self, session):
         """Get a dictionary of latest response information for this trainer
 
         Returns:
             List of tuples of (key, value) for each stat in the response
         """
         # TODO Do we need to do a query here? Or can we just return the newest_response attribute
-        response_values = self.newest_response.split(";")
-        response_dict = dict(zip(Stat.get_all_names(), response_values))
+        if not self.newest_response:
+            print(f"'newest_response' not set for {self.name}")
+            return None
+
+        # Get the Response object from the integer id self.newest_response
+        response = session.query(Response).filter(Response.id == self.newest_response).one()
+        response_values = response.strdata.split(";")
+        response_dict = dict(zip(Stat.get_all_names(session), response_values))
         return response_dict
 
 
@@ -158,6 +164,7 @@ class Response(Base):
 
     @classmethod
     def save_response(cls, session, response_values, timestamp=None):
+        """Save a response to the database"""
         # TODO simple hack for now: we do a list comprehension below where we skip just the "trainername"
         # response_values is expected to be a:
         #   CombinedMultiDict(get, post)
@@ -189,8 +196,6 @@ class Response(Base):
         # Then make the values a single string
         #strdata = ";".join([v for k, v, o in key_val_order])
         strdata = ";".join(str(val) for val in stat_data_dict.values())
-
-        #raise Exception
 
         # Response DB object
         if not timestamp:
