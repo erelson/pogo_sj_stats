@@ -17,27 +17,27 @@
    "Trainer Level":
       ["Integer",0,0,0,0,50,true,true,"trainer_level"],
    "Unique Species Caught":
-      ["Integer",0,0,0,0,795,true,true,"pokedex_caught"],
+      ["Integer",0,0,0,0,801,true,true,"pokedex_caught"],
    "Unique Species Seen":
-      ["Integer",0,0,0,0,795,true,true,"pokedex_seen"],
+      ["Integer",0,0,0,0,801,true,true,"pokedex_seen"],
    "Unknown Generation":
       ["Integer",0,0,0,0,2,true,true,"pokedex_entries_unknown"],
    "Special Dex: Purified":
-      ["Integer",0,0,0,0,276,true,true,"pokedex_purified"],
+      ["Integer",0,0,0,0,287,true,false,"pokedex_purified"],
    "Special Dex: Shadow":
-      ["Integer",0,0,0,0,276,true,true,"pokedex_shadow"],
+      ["Integer",0,0,0,0,287,true,false,"pokedex_shadow"],
    "Special Dex: Perfect":
-      ["Integer",0,0,0,0,795,true,true,"pokedex_4star"],
+      ["Integer",0,0,0,0,799,true,false,"pokedex_4star"],
    "Special Dex: 3 Stars":
-      ["Integer",0,0,0,0,795,true,true,"pokedex_3star"],
+      ["Integer",0,0,0,0,799,true,false,"pokedex_3star"],
    "Special Dex: Shiny 3 Stars":
-      ["Integer",0,0,0,0,646,true,true,"pokedex_3star_shiny"],
+      ["Integer",0,0,0,0,654,true,false,"pokedex_3star_shiny"],
    "Special Dex: Shiny":
-      ["Integer",0,0,0,0,646,true,true,"pokedex_shiny"],
+      ["Integer",0,0,0,0,654,true,false,"pokedex_shiny"],
    "Special Dex: Lucky":
-      ["Integer",0,0,0,0,782,true,true,"pokedex_lucky"],
+      ["Integer",0,0,0,0,789,true,false,"pokedex_lucky"],
    "Special Dex: Event/Costume":
-      ["Integer",0,0,0,0,173,true,true,"pokedex_event"],
+      ["Integer",0,0,0,0,178,true,false,"pokedex_event"],
    "Stardust":
       ["Integer",0,0,0,0,-1,false,false,"pokemon_info_stardust"],
    "Go Battle League - Overall Wins":
@@ -46,12 +46,12 @@
       ["Integer",0,0,0,0,-1,true,true,"go_battle_league_overall_played"],
    "Go Battle League - Overall Streak":
       ["Integer",0,0,0,0,-1,true,true,"go_battle_league_overall_streak"],
-   "Elite Collector":
-      ["Integer",0,0,0,0,-1,true,true,"elite_collector_challenge", "comment: being lazy on maximum here"],
    "Gym Badges":
-      ["Integer",0,0,0,0,-1,true,false,"gymbadges_total"],
+      ["Integer",0,0,0,0,1000,true,false,"gymbadges_total"],
    "Gold Gym Badges":
       ["Integer",0,0,0,0,-1,true,false,"gymbadges_gold"],
+   "Elite Collector":
+      ["Integer",0,0,0,0,-1,true,true,"elite_collector_challenge", "comment: being lazy on maximum here"],
    "Jogger":
       ["Float",10,100,1000,10000,-1,true,false,"travel_km"],
    "Kanto":
@@ -118,12 +118,10 @@
       ["Integer",1,5,20,50,-1,true,true,"ultra_hero"],
    "Best Buddy":
       ["Integer",1,10,100,200,-1,true,true,"best_buddy"],
-   "Wayfarer":
-      ["Integer",50,500,1000,1500,-1,true,true,"wayfarer_agreements"],
    "Kalos":
-      ["Integer",5,25,50,72,63,true,true,"pokedex_entries_gen6"],
+      ["Integer",5,25,50,72,65,true,true,"pokedex_entries_gen6"],
    "Alola":
-      ["Integer",5,25,50,86,63,true,true,"pokedex_entries_gen7"],
+      ["Integer",5,25,50,86,66,true,true,"pokedex_entries_gen7"],
    "Galar":
       ["Integer",5,25,50,89,15,true,true,"pokedex_entries_gen8"],
    "Triathlete":
@@ -134,10 +132,12 @@
       ["Integer",10,100,1000,2000,-1,true,true,"raid_battle_friends"],
    "Picnicker":
       ["Integer",5,25,500,2500,-1,true,true,"lure_module_catches"],
+   "Wayfarer":
+      ["Integer",50,500,1000,1500,-1,true,false,"wayfarer_agreements"],
    "Successor":
       ["Integer",1,50,500,1000,-1,true,true,"mega_evolves"],
    "Mega/Primal Evolution Guru":
-      ["Integer",1,24,36,46,35,true,true,"pokedex_entries_mega_dex"],
+      ["Integer",1,24,36,46,37,true,true,"pokedex_entries_mega_dex"],
    "Hisui":
       ["Integer",1,3,5,7,4,true,true,"pokedex_entries_gen9"],
    "Friend Finder":
@@ -185,6 +185,10 @@
    "Delinquent":
       ["Integer",10,50,200,2500,-1,true,false,"type_dark"],
    "Fairy Tale Girl":
-      ["Integer",10,50,200,2500,-1,true,false,"type_fairy"]
+      ["Integer",10,50,200,2500,-1,true,false,"type_fairy"],
+   "Route Badges":
+      ["Integer",0,0,0,0,-1,true,false,"routes_completed"],
+   "Showcase Star":
+      ["Integer",1,10,50,100,-1,true,false,"showcase"]
   }
 }

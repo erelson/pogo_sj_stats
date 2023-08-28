@@ -73,15 +73,22 @@ class Stat(Base):
         return session.query(Stat.name).order_by(Stat.order_idx).all()
 
     @classmethod
-    def unpack_strdata(cls, strdata, session, keys=None):
-        """Given a Response.strdata string, return a dictionary of stat names and values"""
+    def unpack_strdata(cls, strdata, session, keys=None, pad_data=False):
+        """Given a Response.strdata string, return a dictionary of stat names and values
+
+
+        """
         # 
         names = cls.get_all_names(session)
         names = [name[0] for name in names]
         # strdata is inserted in db-correct order, so we know the order after splitting.
         strdata_vals = strdata.split(";")
         # This assertion would point at a database mismatch, maybe.
-        assert len(strdata_vals) == len(names)
+        if pad_data:
+            if zeros_to_append := len(names) - len(strdata_vals):
+                strdata_vals += ["0"] * zeros_to_append
+        else:
+            assert len(strdata_vals) == len(names)
         ## TODO are names pretty or icon names? Answer: pretty
         #return dict(zip(names, strdata_vals))
         #return {name: {"value": int(val) if val else 0} for name, val in zip(names, strdata_vals)}
@@ -194,6 +201,7 @@ class Response(Base):
                 continue
             stat_data_dict[k] = v
         # Then make the values a single string
+        # The values are in order of the order in the DB (NOT the orderidx column though)
         #strdata = ";".join([v for k, v, o in key_val_order])
         strdata = ";".join(str(val) for val in stat_data_dict.values())
 
