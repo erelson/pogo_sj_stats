@@ -2,10 +2,10 @@ Reference of choice:
 https://pokemongo.fandom.com/wiki/Category:Pok%C3%A9mon
 
 Total Dex live in Pogo:
-- 801 - https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
+- 823 - https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
 
 Shiny:
-- 654 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
+- 687 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
 
 Shadow/purified:
 - 287? - https://pokemongo.fandom.com/wiki/List_of_Shadow_Pok%C3%A9mon
@@ -15,13 +15,16 @@ Shadow/purified:
   - Also 2x Apex legendaries
 
 Costumes:
-- 178 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
+- 185 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
+(is this right? 181 might be missing +4 for global pikas as of 8/28)
 
 Lucky: Current dex minus mythicals (except Meltan/Melmetal)
+- 810 (Sept 27) 20 Paldeans
+- 790 (Aug 29) adding Passimian
 - 789 (Jul 30) based on subtracting mythicals from total dex
 - 782 as of May 31; Helicoid had 779 and was missing Hawlucha, Larvesta, Volcarona
 - 777 as of May 31 (seems un-updated) - https://pokemongo.fandom.com/wiki/List_of_Pok%C3%A9mon
-- Alternately, subtract 12 mythical from Total Dex? 783 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
+- Alternately, subtract 13 mythical from Total Dex? 783 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
  Mew
  Celebi
  Jirachi
@@ -34,10 +37,10 @@ Lucky: Current dex minus mythicals (except Meltan/Melmetal)
  Genesect
  Zarude
  Hoopa
+ Diancie
  ---
  Phione
  Manaphy
- Diancie
  Volcanion
  Magearna
  Marshadow
