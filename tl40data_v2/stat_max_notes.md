@@ -2,23 +2,28 @@ Reference of choice:
 https://pokemongo.fandom.com/wiki/Category:Pok%C3%A9mon
 
 Total Dex live in Pogo:
-- 823 - https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
+- 830 - https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
+
+Regional dex counts: Check here:
+https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
 
 Shiny:
-- 687 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
+- 694 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
 
 Shadow/purified:
-- 287? - https://pokemongo.fandom.com/wiki/List_of_Shadow_Pok%C3%A9mon
+- 306? - https://pokemongo.fandom.com/wiki/List_of_Shadow_Pok%C3%A9mon
 - Including alolan forms
   - 15 more...
-    2x diglett, a-maro, exe, 2x rat, 2x sand, 2x vulpix, 2x grimer, 3x geodude
+    2x diglett, a-maro, exe, 2x rat, 2x sand, 2x vulpix, 2x grimer, 3x geodude,
+  - hisuian sneasel
   - Also 2x Apex legendaries
 
 Costumes:
-- 185 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
+- 199 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
 (is this right? 181 might be missing +4 for global pikas as of 8/28)
 
 Lucky: Current dex minus mythicals (except Meltan/Melmetal)
+- 817 (Oct 29) 7 new releases (greavard/smoliv/skiddo fams)
 - 810 (Sept 27) 20 Paldeans
 - 790 (Aug 29) adding Passimian
 - 789 (Jul 30) based on subtracting mythicals from total dex
@@ -51,6 +56,3 @@ Mega:
 (wrong 7-30:) https://pokemongo.fandom.com/wiki/Mega_Evolution#List_of_Mega-Evolved_Pok.C3.A9mon
 - This link is missing primal kyogre/groudon
 - 39
-
-Regional dex counts: Check here:
-https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/

@@ -17,27 +17,27 @@
    "Trainer Level":
       ["Integer",0,0,0,0,50,true,true,"trainer_level"],
    "Unique Species Caught":
-      ["Integer",0,0,0,0,823,true,true,"pokedex_caught"],
+      ["Integer",0,0,0,0,830,true,true,"pokedex_caught"],
    "Unique Species Seen":
-      ["Integer",0,0,0,0,823,true,true,"pokedex_seen"],
+      ["Integer",0,0,0,0,830,true,true,"pokedex_seen"],
    "Unknown Generation":
       ["Integer",0,0,0,0,2,true,true,"pokedex_entries_unknown"],
    "Special Dex: Purified":
-      ["Integer",0,0,0,0,287,true,false,"pokedex_purified"],
+      ["Integer",0,0,0,0,306,true,false,"pokedex_purified"],
    "Special Dex: Shadow":
-      ["Integer",0,0,0,0,287,true,false,"pokedex_shadow"],
+      ["Integer",0,0,0,0,306,true,false,"pokedex_shadow"],
    "Special Dex: Perfect":
-      ["Integer",0,0,0,0,823,true,false,"pokedex_4star"],
+      ["Integer",0,0,0,0,830,true,false,"pokedex_4star"],
    "Special Dex: 3 Stars":
-      ["Integer",0,0,0,0,823,true,false,"pokedex_3star"],
+      ["Integer",0,0,0,0,830,true,false,"pokedex_3star"],
    "Special Dex: Shiny 3 Stars":
-      ["Integer",0,0,0,0,687,true,false,"pokedex_3star_shiny"],
+      ["Integer",0,0,0,0,694,true,false,"pokedex_3star_shiny"],
    "Special Dex: Shiny":
-      ["Integer",0,0,0,0,687,true,false,"pokedex_shiny"],
+      ["Integer",0,0,0,0,694,true,false,"pokedex_shiny"],
    "Special Dex: Lucky":
-      ["Integer",0,0,0,0,810,true,false,"pokedex_lucky"],
+      ["Integer",0,0,0,0,817,true,false,"pokedex_lucky"],
    "Special Dex: Event/Costume":
-      ["Integer",0,0,0,0,185,true,false,"pokedex_event"],
+      ["Integer",0,0,0,0,199,true,false,"pokedex_event"],
    "Stardust":
       ["Integer",0,0,0,0,-1,false,false,"pokemon_info_stardust"],
    "Go Battle League - Overall Wins":
@@ -121,7 +121,7 @@
    "Best Buddy":
       ["Integer",1,10,100,200,-1,true,true,"best_buddy"],
    "Kalos":
-      ["Integer",5,25,50,72,66,true,true,"pokedex_entries_gen6"],
+      ["Integer",5,25,50,72,68,true,true,"pokedex_entries_gen6"],
    "Alola":
       ["Integer",5,25,50,86,68,true,true,"pokedex_entries_gen7"],
    "Galar":
@@ -137,7 +137,7 @@
    "Wayfarer":
       ["Integer",50,500,1000,1500,-1,true,false,"wayfarer_agreements"],
    "Paldea":
-      ["Integer",5,30,80,104,22,true,true,"pokedex_entries_gen10"],
+      ["Integer",5,30,80,104,27,true,true,"pokedex_entries_gen10"],
    "Successor":
       ["Integer",1,50,500,1000,-1,true,true,"mega_evolves"],
    "Mega/Primal Evolution Guru":
