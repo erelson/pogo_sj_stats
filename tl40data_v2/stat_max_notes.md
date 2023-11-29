@@ -2,13 +2,15 @@ Reference of choice:
 https://pokemongo.fandom.com/wiki/Category:Pok%C3%A9mon
 
 Total Dex live in Pogo:
-- 830 - https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
+- 833 - https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
 
 Regional dex counts: Check here:
 https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
 
 Shiny:
-- 694 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
+- 698 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
+- As of Nov 2023, our count is 3 lower than linked above (698 vs 701)
+
 
 Shadow/purified:
 - 306? - https://pokemongo.fandom.com/wiki/List_of_Shadow_Pok%C3%A9mon
@@ -19,10 +21,11 @@ Shadow/purified:
   - Also 2x Apex legendaries
 
 Costumes:
-- 199 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
+- 204 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
 (is this right? 181 might be missing +4 for global pikas as of 8/28)
 
 Lucky: Current dex minus mythicals (except Meltan/Melmetal)
+- 820 (Nov 28) 3 new releases (tadbulb, bellibolt, clodsire)
 - 817 (Oct 29) 7 new releases (greavard/smoliv/skiddo fams)
 - 810 (Sept 27) 20 Paldeans
 - 790 (Aug 29) adding Passimian
@@ -54,5 +57,5 @@ Lucky: Current dex minus mythicals (except Meltan/Melmetal)
 
 Mega:
 (wrong 7-30:) https://pokemongo.fandom.com/wiki/Mega_Evolution#List_of_Mega-Evolved_Pok.C3.A9mon
-- This link is missing primal kyogre/groudon
-- 39
+- This link is missing primal kyogre/groudon, so add 2
+- 40
