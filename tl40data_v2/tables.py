@@ -76,7 +76,14 @@ class Stat(Base):
     def unpack_strdata(cls, strdata, session, keys=None, pad_data=False):
         """Given a Response.strdata string, return a dictionary of stat names and values
 
+        Args:
+            strdata (str): A semicolon-separated string of values, in the order of Stat.order_idx
+            session (sqlalchemy.orm.session.Session): A session object
+            keys (list, optional): A list of stat names to return. Defaults to None.
+            pad_data (bool, optional): If True, pad the returned dictionary with zeros for missing stats. Defaults to False.
 
+        Returns:
+            dict: A dictionary of stat names and values
         """
         # 
         names = cls.get_all_names(session)
@@ -126,7 +133,7 @@ class Trainer(Base):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def create_trainer(self, name):
+    def create_trainer(self, name):  # TODO delete this?
         pass
 
     def get_newest_response(self, session):

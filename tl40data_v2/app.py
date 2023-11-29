@@ -111,18 +111,12 @@ def get_survey_data_in_survey_order(session, user=None):
 
     #if trainer_data:
     # Calculate offsets for each stat category
-    # For each stat category, iterate through its badge amounts, calculating offsets based on previous stat amount
-    # NOTE static_stat_info should be the same as categories was in my firefox CSS-tweak script??
-    #for cnt, key in enumerate(categories):
-    # TODO static_stat_info vs stats_list
-    #for cnt, key in enumerate(static_stat_info["data"]):
+    # For each stat category, iterate through its badge amounts, calculating offsets based on previous stat amount.
+    # Use cnt as index in stats_list, generated from stats_vals.
     for cnt, key in enumerate(stat_vals):  # iterate through the entries loaded from json
         # Note: key is e.g. "Unique Species Caught"
-        #x = categories[key]  # We don't actually use the key names in this script...
-        #x = static_stat_info["data"][key]  # We don't actually use the data key names in this script...
         # TODO we could probably just iterate over the .values()...
         x = stat_vals[key]  # We don't actually use the key names in this script...
-        #= x[4]
         statname = x[7]
         # This conditional... not sure we need it; should blow up instead
         #if statname not in column_lookup:
@@ -138,7 +132,7 @@ def get_survey_data_in_survey_order(session, user=None):
         except ValueError as e:
             previousval = float(trainer_data[(key,)])  # Technically we could do this always
         except KeyError:
-            print("Missing key:", key)
+            print("Missing key:", key)  # Stat/key is not in DB; but should be added by next survey submission.
             previousval = 0
         except TypeError:
             #print(f"TypeError with trainer_data[{key}], {type(key)}")
@@ -376,18 +370,13 @@ def fill_survey(user=None):
     # Prefill trainername field
     if user:
         form.trainername.data = user
-    else: # add a button that routes to /survey/<username> using the tranername field
-        pass
-        # TODO
-        # Button
-
 
     html_out = "placeholder"
     print("", file=sys.stderr)
     try:
-        print("DEBUG HERE - got", request.method)
+        print("SUBMISSION HERE - got request type", request.method)
         if hasattr(request, "values"):
-            print(request.values)
+            print("Survey values given were:", request.values)
         request_method = request.method
         form_validated = form.validate()
     except RuntimeError:
@@ -475,6 +464,7 @@ def fill_test_survey():
     # Prefill trainername field
     if user:
         form.trainername.data = user
+    # Button for loading a user's past submission is done in the jinja template + JS
 
     html_out = "placeholder"
     print("", file=sys.stderr)
@@ -489,7 +479,7 @@ def fill_test_survey():
             # Redirect to user history page
         if session:  # is set up
             response = Response.save_response(session, response_values=request.values)
-            print(response)
+            print("Raw saved response object:", response)  # TODO delete this? It just prints a python object identifier I think?
             session.commit()
             session.flush()
 
