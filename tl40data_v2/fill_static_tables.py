@@ -3,8 +3,7 @@
 # Standard library
 from argparse import ArgumentParser
 import json
-import os
-from tables import Stat, Trainer, Response
+from tables import Stat
 
 # Third party
 from sqlalchemy import select
@@ -24,28 +23,36 @@ def fill_stats(session: Session, changed: bool = False):
         #existing_stat_data = session.query(Stat.name).all()
         existing_stat_data = session.query(Stat).all()
         existing_stat_lookup = {stat.name: stat for stat in existing_stat_data}
+        existing_stat_names = [stat.name for stat in existing_stat_data]  # for lookup with .index()
     except OperationalError as e:
         existing_stat_lookup = {}
 
     static_stat_info = json.load(open("stats.json", 'r'))  # dict
-    stat_names = static_stat_info["key"]  # list
-    stat_vals = static_stat_info["data"]  # dict
-    for cnt, stat_name in enumerate(stat_vals):
-        #print(dir(stat_name))
-        #print((stat_name))
-        #if stat_name.name in existing_stat_lookup:
+    json_stat_names = static_stat_info["key"]  # list
+    json_stat_vals = static_stat_info["data"]  # dict
+    # In our json files, we use a order_idx value that helps determine the
+    # order of the different stats in a survey.  This survey order can be
+    # changed by modifying the json.
+    #
+    # In the db, we have a similarly named field, but this field is the index
+    # of the stat in the strdata field of a response. When we add new stat columns,
+    # they get the next index in the strdata field.
+    new_stat_order_idx = len(existing_stat_data)
+    for stat_name in enumerate(json_stat_vals):
         if stat_name in existing_stat_lookup:
-            # TODO verify this doesn't break when we add it?
-            stat = existing_stat_data[cnt]
-            #print(dir(stat))
-            #print(stat.keys())
-            if stat.order_idx != cnt:
+            # NOTE: This doesn't do any updates of column values in the row...
+            stat = existing_stat_lookup[stat_name]
+            existing_stat_idx = existing_stat_names.index(stat_name)  # preserve DB's order
+            # This should rarely happen? Or maybe never? Might be a relic from earlier confused coding.
+            if stat.order_idx != existing_stat_idx:  # this reads poorly; should rename stat...
+                print("WARNING: Updating order_idx value of", stat_name)
                 changed = True
-            stat.order_idx = cnt
-        else:
-            stat = Stat(name=stat_name, order_idx=cnt,
-                        **dict(zip(stat_names, stat_vals[stat_name])))
+            stat.order_idx = existing_stat_idx
+        else:  # add new stat in the database; its idx is essentially len(stats)
+            stat = Stat(name=stat_name, order_idx=new_stat_order_idx,
+                        **dict(zip(json_stat_names, stat_vals[stat_name])))
             changed = True
+            new_stat_order_idx += 1  # increment idx for the next new stat
 
         session.add(stat)
 
@@ -86,6 +93,6 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser("Fill in non-user-submitted data to a db")
+    parser = ArgumentParser("Fill in non-user-submitted data to a db. Can be re-run to add new survey rows.")
     args = parser.parse_args()
     main(args)

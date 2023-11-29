@@ -48,7 +48,8 @@ class Stat(Base):
     maximum = Column(Integer)
     required = Column(Boolean)
     monotonic = Column(Boolean)  # TODO nullable? what has been stored to-date?
-    order_idx = Column(Integer)  # dictates order aka position in response.strdata
+    order_idx = Column(Integer)  # dictates stat order aka position in response.strdata
+                                 # Note that survey display order is DIFFERENT (it's from stats.json)
 
     def __init__(self, *args, **kwargs):
         #print("OHHH")
