@@ -2,29 +2,32 @@ Reference of choice:
 https://pokemongo.fandom.com/wiki/Category:Pok%C3%A9mon
 
 Total Dex live in Pogo:
-- 833 - https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
+- 839 - https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
+- Jan 2024: Varoom + evo were not counted; 837 -> 839
 
 Regional dex counts: Check here:
 https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
 
 Shiny:
-- 698 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
-- As of Nov 2023, our count is 3 lower than linked above (698 vs 701)
+- 704 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
+- As of Nov 2023, our count is 3 lower than linked above (703 vs 706)
 
 
 Shadow/purified:
-- 306? - https://pokemongo.fandom.com/wiki/List_of_Shadow_Pok%C3%A9mon
+- 326? - https://pokemongo.fandom.com/wiki/List_of_Shadow_Pok%C3%A9mon
 - Including alolan forms
   - 15 more...
     2x diglett, a-maro, exe, 2x rat, 2x sand, 2x vulpix, 2x grimer, 3x geodude,
   - hisuian sneasel
   - Also 2x Apex legendaries
+  - Jan: ferro 2, kyo, dwebbl 2, corph 2, tenta 2, snorunt 3, chimchar 3, piplup 3, croagunk 2, 
 
 Costumes:
-- 204 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
+- 210 - https://pokemongo.fandom.com/wiki/Event_Pok%C3%A9mon
 (is this right? 181 might be missing +4 for global pikas as of 8/28)
 
 Lucky: Current dex minus mythicals (except Meltan/Melmetal)
+- 823 (Dec 31) 3 new (cetot/tit, wyrdeer)
 - 820 (Nov 28) 3 new releases (tadbulb, bellibolt, clodsire)
 - 817 (Oct 29) 7 new releases (greavard/smoliv/skiddo fams)
 - 810 (Sept 27) 20 Paldeans
