@@ -378,7 +378,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
 
     # Dictionary by badge type of the number needed to earn the platinum badge
     plat_badge_thresholds = json.loads(open(platinum_counts_path, 'r').read())
-    # Drop the platinum badge count from end of the list, then re-add it after appending other fields (like what?)
+    # Drop the platinum badge count from end of the list, then re-add it after appending other fields (like special dexes)
     all_fields = report_fields[:-1] + [x for x in plat_badge_thresholds.keys() if x not in list(report_fields)]
     # Put Platinum Badge count last in our processing order
     all_fields.append("Platinum Badges")
@@ -487,8 +487,8 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                                            ))
 
             elif stat not in report_fields:
-                # Typically this block is type medals; which we just want to see if the platinum threshold
-                # is crossed
+                # Typically this block is type medals and regional dex values;
+                # which we just want to see if the platinum threshold is crossed
                 if plat_badge_threshold > 0:
                     for player in months_data.keys():
                         # Some players didn't submit a row with type medal entries, so skip them here
@@ -497,7 +497,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
 
                         # The value here can be None, e.g. for many folks' Wayfarer badge
                         if months_data[player][stat]["value"] \
-                                and months_data[player][stat]["value"] > plat_badge_threshold:
+                                and months_data[player][stat]["value"] >= plat_badge_threshold:
                             # TODO check if False -> True, and increment a platinum badge count change dict
                             if not player_platinum_tracker[player][stat]:
                                 player_platinum_increment[player] += 1
@@ -529,7 +529,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                         # The months_data value here can be None, e.g. for many folks' Wayfarer badge
                         # (TODO the above comment may mostly apply to tl40data surveys?)
                         if months_data[player][stat]["value"] \
-                                and months_data[player][stat]["value"] > plat_badge_threshold:
+                                and months_data[player][stat]["value"] >= plat_badge_threshold:
                             # TODO check if False -> True, and increment a platinum badge count change dict
                             if not player_platinum_tracker[player][stat]:
                                 player_platinum_increment[player] += 1
@@ -715,8 +715,8 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser(description="Grab a google sheet (or use a specified local CSV) "
-                                        "and generate HTML stat pages")
+    parser = ArgumentParser(description="Load/process the sqlite3 database, "
+                                        "and generate HTML stat pages for past several months.")
     #parser.add_argument("file", default="pogo_sj_stats_oct2021.csv",
     #                    help="CSV file from google sheets, containing entire history of form responses")
     args = parser.parse_args()
