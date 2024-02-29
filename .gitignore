@@ -4,3 +4,6 @@ index.html
 *.db
 __pycache__*
 *.Identifier
+
+config.toml
+upload_list.txt
