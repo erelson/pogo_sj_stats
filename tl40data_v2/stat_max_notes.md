@@ -1,5 +1,6 @@
 Reference of choice:
-https://pokemongo.fandom.com/wiki/Category:Pok%C3%A9mon
+https://pokemongo.fandom.com/wiki/Category:Pok%C3%A9mon  (BAD LINK NOW)
+Count month's "total dex" additions here: https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
 
 Total Dex live in Pogo:
 - 845 - https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
@@ -12,7 +13,7 @@ https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
 Paldea medal requires 103 for platinum but dex size is 120
 
 Shiny:
-- 725 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
+- 729 - https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon
 - As of end of Feb 2024, our count increased by 12 and is 1 higher than above?
 - As of Nov 2023, our count is 3 lower than linked above (703 vs 706)
 
