@@ -74,4 +74,4 @@ Lucky: Current dex minus mythicals (except Meltan/Melmetal)
 Mega:
 (wrong 7-30:) https://pokemongo.fandom.com/wiki/Mega_Evolution#List_of_Mega-Evolved_Pok.C3.A9mon
 - This link is missing primal kyogre/groudon, so add 2
-- 40
+- 41

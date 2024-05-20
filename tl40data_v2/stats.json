@@ -47,7 +47,7 @@
    "Go Battle League - Overall Streak":
       ["Integer",0,0,0,0,-1,true,true,"go_battle_league_overall_streak"],
    "Route Badges":
-      ["Integer",0,0,0,0,-1,true,false,"routes_completed"],
+      ["Integer",10,50,200,600,-1,true,false,"routes_completed"],
    "Gym Badges":
       ["Integer",0,0,0,0,1000,true,false,"gymbadges_total"],
    "Gold Gym Badges":
@@ -141,7 +141,7 @@
    "Successor":
       ["Integer",1,50,500,1000,-1,true,true,"mega_evolves"],
    "Mega/Primal Evolution Guru":
-      ["Integer",1,24,36,46,40,true,true,"pokedex_entries_mega_dex"],
+      ["Integer",1,24,36,46,41,true,true,"pokedex_entries_mega_dex"],
    "Hisui":
       ["Integer",1,3,5,7,6,true,true,"pokedex_entries_gen9"],
    "Friend Finder":
