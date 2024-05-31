@@ -81,7 +81,9 @@ class Stat(Base):
             strdata (str): A semicolon-separated string of values, in the order of Stat.order_idx
             session (sqlalchemy.orm.session.Session): A session object
             keys (list, optional): A list of stat names to return. Defaults to None.
-            pad_data (bool, optional): If True, pad the returned dictionary with zeros for missing stats. Defaults to False.
+            pad_data (bool, optional): If True, pad the returned dictionary
+                    with zeros for missing stats. Defaults to False. This lets us
+                    handle old surveys' strdata after new stats have been added.
 
         Returns:
             dict: A dictionary of stat names and values
@@ -89,7 +91,7 @@ class Stat(Base):
         # 
         names = cls.get_all_names(session)
         names = [name[0] for name in names]
-        # strdata is inserted in db-correct order, so we know the order after splitting.
+        # strdata is inserted in db-matching order, so we know the order after splitting.
         strdata_vals = strdata.split(";")
         # This assertion would point at a database mismatch, maybe.
         if pad_data:
@@ -190,14 +192,11 @@ class Response(Base):
         # The keys of response_values are the icon names, not the pretty names.
 
         # Stats list from DB
-        #stat_data = session.query(Stat).all().order_by(Stat.order_idx)
         stat_data = session.query(Stat.icon).order_by(Stat.order_idx).all()  # list of tuples
-        #stats_order_lookup = {stat.icon: stat.order_idx for stat in stat_data}
-        #stat_data_dict = {stat.icon: 0 for stat in stat_data}
         stat_data_dict = {icon[0]: 0 for icon in stat_data}
 
-        # Put response values in DB's order of Stats
-        #key_val_order = [(k, v, stats_order_lookup[k]) for k, v in response_values.items() if k != "trainername"]
+        # Put response values in DB's order of Stats.
+        # Any unfilled values are set to 0...
         #key_val_order.sort(key=lambda x: x[2])
         #print(stat_data_dict)
         #print(len(stat_data_dict))
@@ -210,7 +209,6 @@ class Response(Base):
             stat_data_dict[k] = v
         # Then make the values a single string
         # The values are in order of the order in the DB (NOT the orderidx column though)
-        #strdata = ";".join([v for k, v, o in key_val_order])
         strdata = ";".join(str(val) for val in stat_data_dict.values())
 
         # Response DB object
