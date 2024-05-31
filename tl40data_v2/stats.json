@@ -47,7 +47,7 @@
    "Go Battle League - Overall Streak":
       ["Integer",0,0,0,0,-1,true,true,"go_battle_league_overall_streak"],
    "Route Badges":
-      ["Integer",10,50,200,600,-1,true,false,"routes_badges"],
+      ["Integer",0,0,0,0,-1,true,false,"routes_completed"],
    "Gym Badges":
       ["Integer",0,0,0,0,1000,true,false,"gymbadges_total"],
    "Gold Gym Badges":
