@@ -24,13 +24,6 @@ from tables import Stat, Response, Trainer
 from settings import LOCAL_DB_SPECIFIER
 
 
-# Keep a list of current and past column headers tracked in the survey.
-# This lets us support old submissions when a column is added and present in newer submissions.
-# Could maybe refer to these as schemas?
-# ASSUMPTION: first column_names file should be the most complete one
-column_names_files = ["columns_11-7.json", "columns_11-7_no-types.json"]
-column_names = []
-
 # TODO these should be pulled from DB
 report_fields_path = "../report_fields_1.json"
 platinum_counts_path = "../platinum_counts.json"
