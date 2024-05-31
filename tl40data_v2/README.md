@@ -21,17 +21,19 @@ There are several task that will periodically need doing to keep this site usefu
 
 ## Adding a new field to the survey:
 
-1. Find an icon image and put it in static/
 1. Add to stats.json
-   1. For medals, need to try and figure out the order of the new medal relative to other medals in stats.json
+    1. For medals, need to try and figure out the order of the new medal relative to other medals in stats.json
 1. Add to report_fields_1.json
 1. Update platinum_counts.json if applicable
 1. Git commit the changes to the files above
+1. Find an icon image and put it in static/ (I don't version control these presently)
+    1. e.g. from https://pokemongo.fandom.com/wiki/Medals
 1. Pull down the latest DB
 1. Run fill_static_tables.py
 1. Inspect the db e.g. with sqlitebrowser
 1. Upload the updated DB
 1. Run upload_stat_limits.bash
+1. Copy the new icon to static/ folder on server
 1. Check the survey loads correctly (better yet, submit a survey and check things)
 
 # Notes on hosting setup
