@@ -1,3 +1,6 @@
+New reference of choice:
+https://godex.site
+
 Reference of choice:
 https://pokemongo.fandom.com/wiki/Category:Pok%C3%A9mon  (BAD LINK NOW)
 Count month's "total dex" additions here: https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
@@ -14,6 +17,7 @@ Regional dex counts: Check here:
 https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
 Paldea medal requires 103 for platinum but dex size is 120
 5-2024: added extra for necrozma to Alola dex; added +2 to paldea for wiglett+evo
+7-2024: +2 for TandemousMaushold
 
 Shiny:
 - By release date: https://pokemongo.fandom.com/wiki/List_of_Shiny_Pok%C3%A9mon_release_dates
@@ -81,4 +85,4 @@ Lucky: Current dex minus mythicals (except Meltan/Melmetal)
 Mega:
 (wrong 7-30:) https://pokemongo.fandom.com/wiki/Mega_Evolution#List_of_Mega-Evolved_Pok.C3.A9mon
 - This link is missing primal kyogre/groudon, so add 2
-- 41
+- 42
