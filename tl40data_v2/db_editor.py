@@ -263,8 +263,8 @@ def prompt_stat(stat_data):
     #keys, values = zip(*stat_data)
     inp = None
     while not inp:
-        inp = input("What stat do you want to look at? ").strip()
-    if not inp or inp.lower() == 'abort':
+        inp = input("What stat do you want to look at? (q to abort) ").strip()
+    if not inp or inp.lower() in ['abort', 'q']:
         return None
     result = process.extract(inp, keys, limit=3)  # List of [key, score]
     # Check first selection

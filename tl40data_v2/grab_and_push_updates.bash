@@ -4,15 +4,17 @@ login=$(grep login config.toml | cut -d' ' -f3 | tr -d '"')
 local_db_location="pogo_sj.db"  # TODO get this from config.toml
 remote_db_location="/home/public/db/pogo_sj.db"
 # Grab database from server
+echo "Grabbing current DB from server..."
 scp $login:/home/public/db/pogo_sj.db .
 
 # Ask if need to edit the database
 echo "Do you need to hand-edit the DB in sqlitebrowser? (y/n)"
 read -r answer
 if [[ "$answer" = "y" ]]; then
-    sqlitebrowser $local_db_location
+    #sqlitebrowser $local_db_location
+    python3 db_editor.py # $local_db_location
     # And re-upload
-    echo "Did you make changes and want to upload the DB to the server? (y/n)"
+    echo "Did you make changes and want to upload the modified DB to the server? (y/n)"
     read -r answer
     if [[ "$answer" = "y" ]]; then
         scp $local_db_location $login:$remote_db_location
