@@ -23,21 +23,21 @@
    "Unknown Generation":
       ["Integer",0,0,0,0,2,true,true,"pokedex_entries_unknown"],
    "Special Dex: Purified":
-      ["Integer",0,0,0,0,338,true,false,"pokedex_purified"],
+      ["Integer",0,0,0,0,346,true,false,"pokedex_purified"],
    "Special Dex: Shadow":
-      ["Integer",0,0,0,0,338,true,false,"pokedex_shadow"],
+      ["Integer",0,0,0,0,346,true,false,"pokedex_shadow"],
    "Special Dex: Perfect":
       ["Integer",0,0,0,0,854,true,false,"pokedex_4star"],
    "Special Dex: 3 Stars":
       ["Integer",0,0,0,0,854,true,false,"pokedex_3star"],
    "Special Dex: Shiny 3 Stars":
-      ["Integer",0,0,0,0,761,true,false,"pokedex_3star_shiny"],
+      ["Integer",0,0,0,0,766,true,false,"pokedex_3star_shiny"],
    "Special Dex: Shiny":
-      ["Integer",0,0,0,0,761,true,false,"pokedex_shiny"],
+      ["Integer",0,0,0,0,766,true,false,"pokedex_shiny"],
    "Special Dex: Lucky":
       ["Integer",0,0,0,0,839,true,false,"pokedex_lucky"],
    "Special Dex: Event/Costume":
-      ["Integer",0,0,0,0,229,true,false,"pokedex_event"],
+      ["Integer",0,0,0,0,240,true,false,"pokedex_event"],
    "Stardust":
       ["Integer",0,0,0,0,-1,false,false,"pokemon_info_stardust"],
    "Go Battle League - Overall Wins":
