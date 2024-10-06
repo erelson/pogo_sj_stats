@@ -104,6 +104,7 @@ class Stat(Base):
         #return {name: {"value": int(val) if val else 0} for name, val in zip(names, strdata_vals)}
         retdict = {}
         for name, val in zip(names, strdata_vals):
+            # TODO refactor? no real reason to have a `values` subkey currently...
             if name not in retdict:
                 retdict[name] = {}
             if val:
@@ -232,15 +233,14 @@ class Response(Base):
             session.flush()  # copilot
             session.commit()  # copilot
         response = cls(trainer_id=trainer_obj.id, timestamp=timestamp, strdata=strdata, revision=1)
-        print(trainer_obj)
 
         # Add response object, so we can get the id
         session.add(response)
+        # Flush and commit, so .id is actually set
+        session.flush()
+        session.commit()
 
         # Set trainer's newest_response, and use whichever name capitalization they gave this time
-        print("existing newest response date:", trainer_obj.newest_response_date)
-        print("Do timestamp types match?:", type(timestamp), type(trainer_obj.newest_response_date))
-        print("  and is it equivalen to None in python?", trainer_obj.newest_response_date is None)
         if trainer_obj.newest_response_date is None or timestamp > trainer_obj.newest_response_date:
             trainer_obj.newest_response_date = timestamp
             trainer_obj.newest_response = response.id
