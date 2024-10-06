@@ -93,31 +93,6 @@ def random_quip():
     return quips[idx]
 
 
-def get_column_names(filepaths=column_names_files):
-    # Runs once to initialize column_names if needed.
-    if column_names:
-        return column_names
-    for fp in filepaths:
-        if not os.path.isfile(fp):
-            fp = os.path.join(os.path.dirname(__file__), fp)
-            if not os.path.isfile(fp):
-                print("Error: Setup: Failed to find file '{fp}' for column names" )
-                continue
-        with open(fp, 'r') as fr:
-            try:
-                colnames = json.load(fr)
-                if not isinstance(colnames, list):
-                    raise TypeError("Json must contain a single list")
-            except Exception as e:
-                print(e)
-                print("Error: Setup: Failed to load column names in '{fp}'")
-                continue
-            column_names.append(colnames)
-
-    column_names.sort(key=lambda x: len(x))
-    return column_names
-
-
 def relative_date_string_to_date(datestr, ref_date_str):
     """Return the date indicated by a relative date string like "Last Tuesday".
 
@@ -151,40 +126,6 @@ def relative_date_string_to_date(datestr, ref_date_str):
     else:
         print(f"FAILED TO HANDLE 'datestr' with value '{datestr}'")
         return None
-
-
-def get_val(valstring):
-    """A bunch of lazy parsing logic for contents of each "table cell" copied from tl40data.com.
-
-    Categories:
-    1. Date of submission
-    2. String, like a username
-    3. Numeric value, with or without an increment
-    4. No data, represented as "---"
-
-    Returns dictionary of the two parsed values, "value" and "change" that may be present.
-    If there's no "change", that value will be None.
-    """
-    # TODO decide what empty/missing values ought to be and explicitly define meaning of None or empty string, etc.
-    valstring = valstring.strip()
-    if valstring == "---" or not valstring:
-        return {"value": None, "change": None}
-    if len(valstring) == 10 and valstring[2] == "/": # column is a date; just return value
-        return {"value": valstring, "change": ''}
-    try:
-        int(valstring[0])
-    except:
-        # non-numeric values; just return the value
-        return {"value": valstring.strip(), "change": ''}
-    # We've got a numeric value like '12345 (+123)' or just '12345'.
-    val = valstring.split()[0] # column total value, e.g. '12345'
-    val = int(val.replace(",", ""))
-    if len(valstring.split()) == 2:
-        incrstring = valstring.split()[1] # column monthly increase, e.g. '(+123)'
-        incrstring = int(incrstring.strip("()+").replace(",", ""))
-    else:
-        incrstring = 0
-    return {"value": val, "change": incrstring}
 
 
 def add_monthly_changes(entries, quantity_names):
