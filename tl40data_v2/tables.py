@@ -115,6 +115,15 @@ class Stat(Base):
                 retdict[name]["value"] = 0
         return retdict
 
+    @classmethod
+    def repack_strdata(cls, stat_data_dict):
+        """Recreate a valid strdata string from the dictionary style provided by unpack_strdata()
+
+        """
+        # NOTE: Assumption: the order of the strdata
+        # TODO(enhancement) refactor out the "value" key in unpack_strdata
+        strdata = ";".join(str(val["value"]) for val in stat_data_dict.values())
+        return strdata
 
 
 class Trainer(Base):
