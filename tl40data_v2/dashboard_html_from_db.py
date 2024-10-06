@@ -46,7 +46,8 @@ DEX_NAMES = ["Unique Species Caught",
 N_TYPE_MEDALS = 18
 STATNAME_DEX_SUM = "Sum of All Dex Counts"
 
-
+# April fools quips on the leaderboards
+APRIL_FOOLS = False
 quips = [
         '"I\'m so proud!"',
         '"You tried."',
@@ -195,7 +196,7 @@ def add_monthly_changes(entries, quantity_names):
     """
     for user in entries:
         try:
-            dates = sorted(entries[user])
+            dates = sorted(entries[user])  # list of dates (datetime.date)
         except TypeError:
             print(user)
             print(entries[user])
@@ -205,11 +206,11 @@ def add_monthly_changes(entries, quantity_names):
         #print(dates)
         #print(len(dates))
 
-        # Case: first submission for user
-        # Case: only have one tl40 submission for user... set all changes to None
-        # Case: preceding submission exists... normalize changes to length of month
+        # Case 1: first submission for user
+        # Case 2: only have one tl40 submission for user... set all changes to None
+        # Case 3: preceding submission exists... normalize changes to length of month
         for idx, d in enumerate(dates):
-            if idx == 0:
+            if idx == 0:  # Case 1
                 for stat in quantity_names:
                     if stat == "Platinum Badges":  # TODO not implemented
                         continue
@@ -222,9 +223,13 @@ def add_monthly_changes(entries, quantity_names):
                 continue
             else:
                 prev_month_idx = idx - 1
-                # TODO... what was my plan for this while loop? Go back further than 'nearby' dates? Which I would determine... how?
-                #while prev_month_idx > 0 and dates[idx] - dates[prev_month_idx]:
-                #    prev_month_idx -= 1
+                # Crudely Check that the previous date is long enough ago that it's probably the previous month.
+                # This avoids small diffs when two submissions are made for the same month for whatever reason.
+                d_current = dates[idx]
+                d_prev = dates[prev_month_idx]
+                while prev_month_idx > 0 and d_current - d_prev < datetime.timedelta(days=20):
+                    prev_month_idx -= 1
+                    d_prev = dates[prev_month_idx]
 
                 # TODO validate elapsed time between d and dates[prev_month_idx] is... long enough
                 #for stat in entries[user][d]:
@@ -382,7 +387,6 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
         starting_date = datetime.date(day=1, year=today_date.year, month=today_date.month)
         month_date = starting_date
 
-    #oct_data = find_near_date(entries, datetime.date(2021, 10, 31))
     months_data = find_near_date(entries, month_date)
     monthname = calendar.month_name[month_date.month]
     month_year = f" ({monthname} {month_date.year})"
@@ -544,7 +548,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                 if stat in DEX_NAMES:
                     dex_sums[player] = dex_sums.get(player, 0) + month_reported_total
 
-            # Generate the HTML
+            # Generate the HTML for this stat
             metric_row = div(cls="row")
             with metric_row:
                 keyname = report_fields_dict[stat]
@@ -574,7 +578,6 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                            ) for cnt, item in enumerate(totals_data[:ranklength])]
 
                 # Monthly gains rankings
-                #data.sort(key=lambda x: -x[1]) # raw +XXX values
                 changedata.sort(key=lambda x: -x[3]) # normalized values
                 div_table2 = div(cls="column")
                 with div_table2:
@@ -582,16 +585,19 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                     with table2_div:
                         th(f"{monthname} Increases", colspan=3)
                         tr(td(b("Rank")), td(b("Player")), td(b(stat)))
-                        #[tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(data[:20])]
-                        #[tr(td(cnt+1), td(item[2]), td(to_increment_str(item[1]))) for cnt, item in enumerate(changedata[:20])]
-                        [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[3])))
-                                for cnt, item in enumerate(changedata[:20])] # normalized value
 
-                        # April fools 2022
-                        #[tr(td(cnt+1), td(item[2]), td(to_increment_str(item[3]), img(width=25, src="prof_willow_round.webp"), sup(random_quip())))
-                        #        for cnt, item in enumerate(changedata[0:1])] # normalized value # 1
-                        #[tr(td(cnt+2), td(item[2]), td(to_increment_str(item[3])))
-                        #        for cnt, item in enumerate(changedata[1:20])] # normalized value #s 2-20
+                        # Regular
+                        if not APRIL_FOOLS:
+                            [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[3])))
+                                    for cnt, item in enumerate(changedata[:20])] # normalized value
+
+                        # April fools
+                        else:
+                            [tr(td(cnt+1), td(item[2]), td(to_increment_str(item[3]), img(width=25, src="prof_willow_round.webp"), sup(random_quip())))
+                                    for cnt, item in enumerate(changedata[0:1])] # normalized value # 1
+                            [tr(td(cnt+2), td(item[2]), td(to_increment_str(item[3])))
+                                    for cnt, item in enumerate(changedata[1:20])] # normalized value #s 2-20
+                        # End April fools
 
     return content_div, running_totals, player_platinum_tracker, False
 
@@ -604,15 +610,14 @@ def load_entries_from_db():
             dictionary of stat values.
     """
     entries = {}
-    # Open DB
 
+    # Open DB
     db_specifier = LOCAL_DB_SPECIFIER
     engine = create_engine(db_specifier)
     session = Session(engine)
 
     # Get our user ID lookup from the DB
     users = session.query(Trainer).all()
-    #users = session.query("trainer").all()
     users_lookup = {user.id: user.name for user in users}
 
     # Read all responses
@@ -629,7 +634,7 @@ def load_entries_from_db():
         # Convert from timestamp (db) to datetime.date (used by our code)
         entry_date = datetime.date.fromtimestamp(float(response.timestamp))#, tz=timezone('US/Pacific'))
 
-        entries[user][entry_date] = Stat.unpack_strdata(response.strdata, session)
+        entries[user][entry_date] = Stat.unpack_strdata(response.strdata, session, pad_data=True)
 
     return entries
 
@@ -657,7 +662,7 @@ def main(args):
         # Start of an HTML document
         doc = dominate.document(title='PoGo Stats - San Jose')
         with doc.head:
-            link(rel='stylesheet', href='static/style.css')
+            link(rel='stylesheet', href='style.css')
             meta(charset='utf-8')
         with doc:
             # TODO move to func?
@@ -668,14 +673,19 @@ def main(args):
                     for key in report_fields:
                         keyname = report_fields_dict[key]
                         a(img(width=50, title=keyname, alt=keyname, src=f"{keyname}.png"), href=f"#{keyname}")
+                    # Build drop-down selection for prior months
                     month_selector = select(name="months", id="months_select", onchange="monthSelect()")
                     with month_selector:
                         option(calendar.month_name[newmonthdate.month] + " " + str(newmonthdate.year),
-                               selected="selected")
+                               value="index.html",  # to redirect to latest
+                               selected="selected")  # this one is the current value (selected) on page-load
+                        option("Latest",
+                               value="index.html")  # to redirect to latest
                         for m in range(12):
                             monthdate = starting_date + relativedelta(months=-1 * m, days=-1)  # e.g. 10-31-2021
                             month_year_str = calendar.month_name[monthdate.month] + " " + str(monthdate.year)
-                            opt = option(month_year_str, value=str(monthdate).rsplit("-", maxsplit=1)[0] + ".html")
+                            option(month_year_str, value=str(monthdate).rsplit("-", maxsplit=1)[0] + ".html")
+                    # Link to survey form
                     a("Submit survey data", href=SURVEY_LINK, cls="headerlinks")
 
             # Tables for each stat
