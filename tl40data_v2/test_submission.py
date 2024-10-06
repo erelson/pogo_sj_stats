@@ -16,11 +16,11 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.engine import ExceptionContext
 
 # Local
-from settings import LOCAL_DB_SPECIFIER, LOCAL_DB_FILENAME
+from settings import LOCAL_DB_SPECIFIER, LOCAL_DB_FILENAME, TEST_USER
 
 
 sub = \
-[('trainername', 'prometheus'),
+[('trainername', TEST_USER.title()),  # make it title case, and expect to be turned into lowercase initially
 ('total_xp', ''),
 # ('trainer', ''),  # not sure where I got this line from
 ('trainer_level', ''),
@@ -101,7 +101,9 @@ sub = \
 ('type_ice', ''),
 ('type_dragon', ''),
 ('type_dark', ''),
-('type_fairy', '')]
+('type_fairy', ''),
+]
+# If there are missing fields ... TBD
 
 
 
@@ -124,10 +126,17 @@ def main():
     #sub_as_dict["trainer"] = sub_as_dict.pop("trainername")
     #response = Response(**sub_as_dict)
 
+    newest_response = session.query(Response).filter(Response.trainername == TEST_USER).order_by(Response.id.desc()).first()
+    print("Validation: trainer's newest response before:", newest_response)
+
     response = Response.save_response(session, response_values=dict(sub))
 
     session.commit()
     session.flush()
+
+    newest_response = session.query(Response).filter(Response.trainername == TEST_USER).order_by(Response.id.desc()).first()
+    print("Validation: trainer's newest response after:", newest_response)
+
     session.close()
 
 
