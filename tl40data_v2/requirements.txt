@@ -1,0 +1,8 @@
+dominate
+flask
+flask_wtf
+fuzzywuzzy
+sqlalchemy
+sqlitebrowser
+toml
+wtforms
