@@ -38,7 +38,7 @@ def fill_stats(session: Session, changed: bool = False):
     # of the stat in the strdata field of a response. When we add new stat columns,
     # they get the next index in the strdata field.
     new_stat_order_idx = len(existing_stat_data)
-    for stat_name in enumerate(json_stat_vals):
+    for stat_name in json_stat_vals:
         if stat_name in existing_stat_lookup:
             # NOTE: This doesn't do any updates of column values in the row...
             stat = existing_stat_lookup[stat_name]
@@ -50,7 +50,7 @@ def fill_stats(session: Session, changed: bool = False):
             stat.order_idx = existing_stat_idx
         else:  # add new stat in the database; its idx is essentially len(stats)
             stat = Stat(name=stat_name, order_idx=new_stat_order_idx,
-                        **dict(zip(json_stat_names, stat_vals[stat_name])))
+                        **dict(zip(json_stat_names, json_stat_vals[stat_name])))
             changed = True
             new_stat_order_idx += 1  # increment idx for the next new stat
 
@@ -90,6 +90,8 @@ def main(args):
 
         print("You can inspect the (presumably new, mostly empty) DB with:")
         print(f"\tsqlite3 {LOCAL_DB_FILENAME} .dump")
+        print("Or if this is an updated db, browse in a more controlled manner with")
+        print(f"\tsqlitebrowser {LOCAL_DB_FILENAME}")
 
 
 if __name__ == '__main__':
