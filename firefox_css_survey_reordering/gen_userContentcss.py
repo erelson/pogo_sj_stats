@@ -84,12 +84,15 @@ print("Paste one complete row of data from tl40data.com:")
 raw = input()
 row_data = parse_pasted_input(raw)[2:]
 
+# The order of stats in the game, selected for ease of in-game lookup order
 with open("survey_to_pogo_order_mapping.json", 'r') as fr:
     column_lookup = json.load(fr)  # given a div element id, get the column for that element's data in a tl40 row
 
+# The values each category's badge levels are at
 with open("medal_counts.json", 'r') as fr:
     categories = json.loads(fr.read())
 
+# For each stat category, iterate through its badge amounts, calculating offsets based on previous stat amount
 for cnt, key in enumerate(categories):
     x = categories[key]  # We don't actually use the key names in this script...
     if x[4] not in column_lookup:
