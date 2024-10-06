@@ -9,8 +9,12 @@ except ImportError:
         print("You need to do a `pip3 install toml`...")
         sys.exit(1)
 
-with open("config.toml", 'r') as fr:
-    config = toml.load(fr)
+try:
+    with open("config.toml", 'r') as fr:
+        config = toml.load(fr)
+except:
+    with open("config.toml", 'rb') as fr:
+        config = toml.load(fr)
 
 
 # Load current upload-months from config; fill month values
