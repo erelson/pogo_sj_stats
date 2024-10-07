@@ -54,7 +54,7 @@ quips = [
         '"The best there ever was!"',
         '"... did you steal my cabbages? :\'("',
         '"Very a-Mew-sing"',
-        '"¯\_(ツ)_/¯"',
+        r'"¯\_(ツ)_/¯"',
         '"Those other trainers ain\'t got a Chansey against you"',
         '"Blasting off again!"',
         '"You ain\'t no casual!"',
