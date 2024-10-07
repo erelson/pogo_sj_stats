@@ -25,9 +25,8 @@ from tables import Stat, Response, Trainer
 from settings import LOCAL_DB_SPECIFIER
 
 
-STATS = []
 MEDALS = ["No medal", "Bronze", "Silver", "Gold", "Platinum"]
-TYPE_MEDALS = ["Schoolkid",  # Used for offsets
+TYPE_MEDALS = ["Schoolkid",  # This list's fields get put at the very end of the survey
                "Black Belt",
                "Bird Keeper",
                "Punk Girl",
@@ -51,7 +50,7 @@ app = Flask(__name__)
 
 
 def get_survey_data_in_survey_order(session, user=None):
-    """
+    """Load data from DB for user and put it in order that we want to display the survey in.
 
     Args:
         session: sqlalchemy session
@@ -84,7 +83,6 @@ def get_survey_data_in_survey_order(session, user=None):
     stat_keys = static_stat_info["key"]  # list   TODO probably not using this here...
     stat_vals = static_stat_info["data"]  # dict keyed by Stat Names
     for cnt, stat_name in enumerate(stat_vals):
-        #STATS.append(Stat(name=stat_name, order_idx=cnt,
         stats_list.append([cnt,  # index to sort by later
                            Stat(name=stat_name, # order_idx=cnt,  # Probably don't need this order since we're not saving this object to DB...
                                 **dict(zip(stat_keys, stat_vals[stat_name]))),
@@ -109,19 +107,11 @@ def get_survey_data_in_survey_order(session, user=None):
         else:
             print(f"Got trainer {user} data.. non-None? {trainer_data != None}", file=sys.stderr)
 
-    #if trainer_data:
+    print(f"Trainer data for {user}: {trainer_data}")  # TODO printing this isn't useful? Probably true
     # Calculate offsets for each stat category
     # For each stat category, iterate through its badge amounts, calculating offsets based on previous stat amount.
     # Use cnt as index in stats_list, generated from stats_vals.
-    for cnt, key in enumerate(stat_vals):  # iterate through the entries loaded from json
-        # Note: key is e.g. "Unique Species Caught"
-        # TODO we could probably just iterate over the .values()...
-        x = stat_vals[key]  # We don't actually use the key names in this script...
-        statname = x[7]
-        # This conditional... not sure we need it; should blow up instead
-        #if statname not in column_lookup:
-        #    #print("SKIPPING:", x[4])
-        #    continue  # Skip some things that aren't in the survey, like Alola and Hisui dexes
+    for cnt, x in enumerate(stat_vals.values()):  # iterate through the entries loaded from json
         try:
             # The actual keys are tuples...
             previousval = trainer_data[(key,)]
@@ -197,6 +187,7 @@ def load_stats():
     return []
 
 class PogoStatsForm(Form):
+    """Form class used for the survey fields. See survey_gen()."""
     pass
 
 
@@ -208,7 +199,9 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
     Args:
         stats_list: list of Stat objects. Each list will drive a input field on the form.
             The order of the list determines the order of the fields on the form.
-        formclass: Class of a form object. 
+        formclass: Class of a form object.
+        _test_default_val: Default value for all fields. Normally set by
+            test code.
 
     Returns:
         A class with attributes set, ready to be instantiated.
@@ -219,9 +212,13 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
     # See also shenanigans around line 150 above.
     sections = [20, 100, 200, 300, 400, 500, 600, 700, 800, 900, 10000]
     section_idx = 0
-    for order, stat, previous_val in stats_list:  # in order already
-        # 
-        print(section_idx, order, stat.icon)
+    for order, stat, previous_val_str in stats_list:  # in order already
+        # This previous_val_str to previous_val crap would be good to clean up.
+        if stat.numtype == "Float":
+            previous_val = float(previous_val_str.split()[0])
+        else:
+            previous_val = int(previous_val_str.split()[0])
+        #print(section_idx, order, stat.icon)
         if order > sections[section_idx]:
             statorder.append(True)
             while order > sections[section_idx]:
@@ -229,13 +226,13 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
         else:
             statorder.append(False)
 
-        print(stat.name, previous_val)
+        #print(stat.name, previous_val_str)
         if stat.name == 'Trainer Level':
-            minimum = max(40, int(previous_val))
+            minimum = max(40, previous_val)
         elif stat.monotonic:
             # We're passing in "123 (badge level)" so need to strip second part before casting
             try:
-                minimum = int(previous_val.split()[0])  # todo floats
+                minimum = previous_val  # todo floats
             except:
                 minimum = 0
         else:
@@ -243,25 +240,31 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
         checks = [validators.NumberRange(min=minimum,
                                          max=stat.maximum if stat.maximum > 0 else None)
                      ]
-        if not stat.required:
+        default_val = _test_default_val
+        if previous_val == stat.maximum:  # Note there are no stats with maximums that are also float values.
+            # Fill in the field for already-maxed stats.
+            default_val = previous_val
+        elif not stat.required:
             checks = [validators.Optional()] + checks
         if stat.numtype == "Float":
+            # TODO fix float input here?
             # Per wtforms docs, DecimalField is usually preferred over FloatField
+            print("FLOAT BOX:", stat.name)
             field = DecimalField(stat.name, validators=checks,
-                                 default=_test_default_val,
+                                 default=default_val,
                                  render_kw={"inputmode": "numeric", "type": "number",
-                                            "placeholder": previous_val,
-                                            "previous_val_with_badge": previous_val,  # unused
+                                            "placeholder": previous_val_str,
+                                            "previous_val_with_badge": previous_val_str,  # unused
                                             },
                                  )
         else:
             field = IntegerField(stat.name, validators=checks,
                                  # TODO move this image part to a setatrr call?
                                  #image="imgs/" + stat.icon + ".png",  # accessed with statlist[i].kwargs['image']
-                                 default=_test_default_val, # Could use this but it fills a valid value. Use render_kw["placeholder"] instead
+                                 default=default_val, # Could use this but it fills a valid value. Use render_kw["placeholder"] instead
                                  render_kw={"inputmode": "numeric", "type": "number",
-                                            "placeholder": previous_val,
-                                            "previous_val_with_badge": previous_val,  # unused
+                                            "placeholder": previous_val_str,
+                                            "previous_val_with_badge": previous_val_str,  # unused
                                             },
                                  )
         # Set the field object on our form, which will later generate the HTML
@@ -280,7 +283,7 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
                                   ])
     formclass.trainername = trainername
     #print(type(formclass.statlist), formclass.statlist)
-    #setattr(form, 
+    #setattr(form,
     #form = formclass()
     #return form #formclass()
     return formclass
@@ -339,17 +342,12 @@ def register():
 
 @app.route('/survey/<username>', methods=['GET', 'POST'])
 def fill_survey_for_user(username=None):
+    # TODO sanitize the username string? Check: What does the decorator do already?
     return fill_survey(username)
 
 @app.route('/survey', methods=['GET', 'POST'])
 @app.route('/survey/', methods=['GET', 'POST'])
 def fill_survey(user=None):
-    # Fill in the data for the form generation
-    #global STATS
-    #if not STATS:  # TODO find a main() method or whatever convention flask uses and run this here...
-    #    get_survey_data_in_survey_order(None, user=user)
-    #stats_list = STATS
-
     # Generate a stats list, either default order, or order by user's badge levels if known
     session = Session(engine, autoflush=True)
     stats_list = get_survey_data_in_survey_order(session=session, user=user)
@@ -404,8 +402,6 @@ def fill_survey(user=None):
                     + "</pre>"
         else:
             print("skipped db_session.add call")
-        #flash('Thanks for ...')
-
         # TODO subsequent HTML or redirect
 
     else:
@@ -438,12 +434,6 @@ def fill_survey(user=None):
 
 @app.route('/test_survey/', methods=['GET', 'POST'])
 def fill_test_survey():
-    # Fill in the data for the form generation
-    #global STATS
-    #if not STATS:  # TODO find a main() method or whatever convention flask uses and run this here...
-    #    get_survey_data_in_survey_order(None, user=user)
-    #stats_list = STATS
-
     # Generate a stats list, either default order, or order by user's badge levels if known
     session = Session(engine, autoflush=True)
     stats_list = get_survey_data_in_survey_order(session=session, user="test")
@@ -492,8 +482,6 @@ def fill_test_survey():
                     + str(request.values)
         else:
             print("skipped db_session.add call")
-        #flash('Thanks for ...')
-
         # TODO subsequent HTML or redirect
 
     else:
@@ -541,11 +529,7 @@ if __name__ == '__main__':
     try:
         app.run()
     except (BaseException, Exception) as e:
-        print(f"Caught {e}; closing DB connection and exiting.")
-        try:
-            session.close()
-        except:
-            pass
+        # TODO no cleanup here; used to do cleanup on a global session object here...
         print("Cleanup finished successfully!")
 
 else:
