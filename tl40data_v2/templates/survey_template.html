@@ -1,32 +1,59 @@
 <!doctype html>
 <html>
-    <head>
-        <title>Survey page</title>
-    </head>
-    <body>
+  <head>
+    <title>Survey page</title>
+  </head>
+  <body>
 {% from "_formhelpers.html" import render_field %}
 <form method=post>
+  {{ print_incomplete_warning() | safe }}
   <dl>
-      <li>{{ render_field(form.trainername) }}</li>
-   {% for i in form.statlist %}
-   <li>{{ render_field(form.__getattribute__(i)) }}</li>
-   {# <li><img src="{{ i }}.png">{{ render_field(form.__getattribute__(i)) }}</li> #}
-   {%endfor%}
+    <li>{{ render_field(form.trainername) }} <input type=submit value="Load trainer's previous survey data and medal order" id="load_data_btn"></li>
+    <hr class="rounded">
+
+    {# FOR LOOP FOR FIELDS #}
+    {% for i, ord in zip(form.statlist, form.statorder) %}
+      {% if ord %}
+        <hr class="rounded">
+      {% endif %}
+
+      {# <img src="../{{ i }}.png" style="width:50px;height:50px;" /> #}
+      {# <li>{{ render_field(form.__getattribute__(i)) }}</li> #}
+      {# this version doesn't work #}
+      <li><img src="../{{ i }}.png" style="width:50px;height:50px;">{{ render_field(form.__getattribute__(i)) }}</li>
+
+    {%endfor%}
   </dl>
+  {{ print_incomplete_warning() | safe }}
   <p><input type=submit value="Submit stats">
 </form>
-<script type="text/javascript">
+  <script type="text/javascript">
 
-// prevent scrolling in all number entry-boxes
-// https://stackoverflow.com/a/38589039
-document.addEventListener("wheel", function(event) {
-    if (document.activeElement.type === "number"){
-    document.activeElement.blur();
-  }
-});
-
-
-
+  // prevent scrolling in all number entry-boxes
+  // https://stackoverflow.com/a/38589039
+  document.addEventListener("wheel", function(event) {
+      if (document.activeElement.type === "number"){
+      document.activeElement.blur();
+    }
+  });
   </script>
-    </body>
+
+  <script>
+    const firstBox = document.getElementById('trainername');
+    const secondBox = document.getElementById('total_xp');
+    const myButton = document.getElementById('load_data_btn');
+
+    function validateInput() {
+        myButton.disabled = !firstBox.value;
+    }
+
+    myButton.addEventListener('click', function(event) {
+        event.preventDefault(); // stop form from submitting normally
+        if (secondBox.value && !confirm("The entered text will be lost. Are you sure you want to continue?")) {
+            return;
+        }
+        window.location.href = window.location.origin + "/survey/" + firstBox.value;
+    });
+  </script>
+  </body>
 </html>
