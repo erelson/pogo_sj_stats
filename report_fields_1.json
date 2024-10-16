@@ -56,6 +56,7 @@
  "Special Dex: Shiny": "pokedex_shiny",
  "Special Dex: Lucky": "pokedex_lucky",
  "Special Dex: Event/Costume": "pokedex_event",
+ "Special Dex: Gigantamax": "pokedex_gmax",
  "Sum of All Dex Counts": "pokedex_sum",
  "Platinum Badges": "platinum_badges"
 }

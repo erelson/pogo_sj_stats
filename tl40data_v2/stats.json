@@ -38,6 +38,8 @@
       ["Integer",0,0,0,0,855,true,false,"pokedex_lucky"],
    "Special Dex: Event/Costume":
       ["Integer",0,0,0,0,240,true,false,"pokedex_event"],
+   "Special Dex: Gigantamax":
+      ["Integer",0,0,0,0,4,true,false,"pokedex_gmax"],
    "Stardust":
       ["Integer",0,0,0,0,-1,false,false,"pokemon_info_stardust"],
    "Go Battle League - Overall Wins":
