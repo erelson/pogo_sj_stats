@@ -141,7 +141,7 @@
    "Successor":
       ["Integer",1,50,500,1000,-1,true,true,"mega_evolves"],
    "Mega/Primal Evolution Guru":
-      ["Integer",1,24,36,46,42,true,true,"pokedex_entries_mega_dex"],
+      ["Integer",1,24,36,46,43,true,true,"pokedex_entries_mega_dex"],
    "Paldea":
       ["Integer",5,30,80,103,47,true,true,"pokedex_entries_gen10"],
    "Hisui":
