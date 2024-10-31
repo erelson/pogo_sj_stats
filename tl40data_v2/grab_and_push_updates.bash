@@ -7,6 +7,10 @@ remote_db_location="/home/public/db/pogo_sj.db"
 echo "Grabbing current DB from server..."
 scp $login:/home/public/db/pogo_sj.db .
 
+if [ $EXIT_AFTER_GRAB = 'true' ]; then
+    exit
+fi
+
 # Ask if need to edit the database
 echo "Do you need to hand-edit the DB in sqlitebrowser? (y/n)"
 read -r answer
