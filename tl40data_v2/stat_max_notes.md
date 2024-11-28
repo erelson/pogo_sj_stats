@@ -1,7 +1,23 @@
 New reference of choice:
+===
 https://godex.site
 
+Values that I offset from this site's reported values for:
+- Event dex (-4)
+  - the 4 clone mons are counted but don't show in game's dex
+- Alola dex (-2)
+  - Melmetal + meltan are included
+- Basculin is counted twice, for its white-striped version
+  - which is part of Galar dex (-1)
+  - Lucky dex: (-1)
+  - Caught/seen/perfect/3star dex (-1)
+- Galar (-7)
+  - Galar is combined with Hisui (-6)
+  - White stripe basculin (-1)
+
+
 Reference of choice:
+===
 https://pokemongo.fandom.com/wiki/Category:Pok%C3%A9mon  (BAD LINK NOW)
 Count month's "total dex" additions here: https://gamerant.com/pokemon-go-a-complete-pokedex-every-pokemon/
 
