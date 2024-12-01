@@ -307,6 +307,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
         content_div: HTML
         running_totals: Updated dictionary
         player_platinum_tracker: Updated dictionary
+        player_count: Number of players with diffs in the current month.
         aborted (bool): If True, did not have (valid) data to render for the month. Other
             return values may simply be None, and should not be used
     """
@@ -351,6 +352,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                                 for player in months_data.keys()}
     player_platinum_increment = {player: 0
                                  for player in months_data.keys()}
+    player_count = "(unset)"  # Number of players that responded to the survey for the being-generated month
 
     content_div = div(cls="content")
     with content_div:
@@ -540,7 +542,15 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                                     for cnt, item in enumerate(changedata[1:20])] # normalized value #s 2-20
                         # End April fools
 
-    return content_div, running_totals, player_platinum_tracker, False
+                # Populate player response count from the first field we track
+                # This doesn't count players that took survey for first time;
+                # they have no month-to-month comparison to count here.
+                # NOTE: If I were to ever revisit how I handle surveys from the
+                # middle of a month, maybe this would be found to have edge cases.
+                if keyname == "total_xp":
+                    player_count = len(changedata)
+
+    return content_div, running_totals, player_platinum_tracker, player_count, False
 
 
 def load_entries_from_db():
@@ -630,10 +640,11 @@ def main(args):
                     a("Submit survey data", href=SURVEY_LINK, cls="headerlinks")
 
             # Tables for each stat
-            content, running_totals, player_platinum_tracker, aborted = render_monthly_html(entries,
-                                                                                            newmonthdate,
-                                                                                            running_totals,
-                                                                                            player_platinum_tracker)
+            content, running_totals, player_platinum_tracker, player_count, aborted = \
+                    render_monthly_html(entries,
+                                        newmonthdate,
+                                        running_totals,
+                                        player_platinum_tracker)
             if aborted:
                 print(f"Skipped month ending on: {newmonthdate} (render_monthly_html aborted; "
                       "no or invalid data for month)")
@@ -641,7 +652,7 @@ def main(args):
             script(type='text/javascript', src='static/scroll2.js')
 
         date_string = str(newmonthdate).rsplit("-", maxsplit=1)[0]
-        print("Generated page for", date_string)
+        print("Generated page for", date_string, f"({player_count} returning trainers)")
         with open(f"html/{date_string}.html", 'w') as fr:
             fr.write(str(doc))
 

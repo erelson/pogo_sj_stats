@@ -7,8 +7,8 @@ remote_db_location="/home/public/db/pogo_sj.db"
 echo "Grabbing current DB from server..."
 scp $login:/home/public/db/pogo_sj.db .
 
-if [ $EXIT_AFTER_GRAB = 'true' ]; then
-    exit
+if [ "$EXIT_AFTER_GRAB" = 'true' ]; then
+    exit 0
 fi
 
 # Ask if need to edit the database
