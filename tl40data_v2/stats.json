@@ -142,6 +142,8 @@
       ["Integer",1,50,500,1000,-1,true,true,"mega_evolves"],
    "Mega/Primal Evolution Guru":
       ["Integer",1,24,36,46,43,true,true,"pokedex_entries_mega_dex"],
+   "Expert Navigator":
+      ["Integer",10,50,200,600,-1,true,false,"routes_trips"],
    "Paldea":
       ["Integer",5,30,80,103,47,true,true,"pokedex_entries_gen10"],
    "Hisui":
@@ -150,8 +152,6 @@
       ["Integer",1,10,20,50,-1,true,false,"referral"],
    "Raid Expert":
       ["Integer",1,50,200,500,-1,true,true,"raid_expert"],
-   "Expert Navigator":
-      ["Integer",10,50,200,600,-1,true,false,"routes_trips"],
    "Tiny Pokémon Collector":
       ["Integer",5,25,100,500,-1,true,true,"tinycollector"],
    "Jumbo Pokémon Collector":
