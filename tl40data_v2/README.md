@@ -35,9 +35,17 @@ There are several task that will periodically need doing to keep this site usefu
 
 ## Updating limits (monthly)
 
+1. Log in to https://godex.site
+1. ./parse_and_update_from_godex.site.py
+1. Run upload_stat_limits.bash
+1. Git commit the changes
+
+Old manual way:
+
 1. Review links in stat_max_notes.md, figure out changes
 1. Update stats.json
 1. Run upload_stat_limits.bash
+1. Git commit the changes
 
 ## Adding a new field to the survey:
 
