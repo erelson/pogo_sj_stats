@@ -56,8 +56,8 @@ Old manual way:
 1. Git commit the changes to the files above
 1. Find an icon image and put it in static/ (I don't version control these presently)
     1. e.g. from https://pokemongo.fandom.com/wiki/Medals
-1. Pull down the latest DB
-1. Run fill_static_tables.py
+1. Pull down the latest DB: ./grab_latest_db.bash
+1. Run ./fill_static_tables.py
 1. Inspect the db e.g. with sqlitebrowser
 1. Upload the updated DB
 1. Run upload_stat_limits.bash
