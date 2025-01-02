@@ -15,8 +15,25 @@ fi
 echo "Do you need to hand-edit the DB in sqlitebrowser? (y/n)"
 read -r answer
 if [[ "$answer" = "y" ]]; then
-    #sqlitebrowser $local_db_location
-    python3 db_editor.py # $local_db_location
+    while true; do
+        echo "Which method do you want to use?"
+        echo "1: fuzzy lookup with db_editor.py (default) "
+        echo "2: manual lookup with sqlitebrowser"
+        read -r -p "Answer: " user_input 
+        case "$user_input" in
+            1)
+                python3 db_editor.py $local_db_location
+                break
+                ;;
+            2)
+                sqlitebrowser $local_db_location
+                break
+                ;;
+            *)
+                echo "Invalid input. Please try again."
+                ;;
+        esac
+    done
     # And re-upload
     echo "Did you make changes and want to upload the modified DB to the server? (y/n)"
     read -r answer

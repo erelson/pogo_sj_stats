@@ -13,7 +13,7 @@ import sqlite3
 
 # Local
 from tables import Stat, Response, Trainer
-from settings import LOCAL_DB_SPECIFIER 
+from settings import LOCAL_DB_SPECIFIER, local_db_specifier_from_file
 
 # Use: Launch this from my generate-stats bash script.
 
@@ -59,10 +59,13 @@ def load_entries_from_db(session):
     return trainers_lookup, response_refs, stat_keys
 
 class Editor():
-    def __init__(self):
+    def __init__(self, db_filepath=None):
 
         # Open DB
-        db_specifier = LOCAL_DB_SPECIFIER
+        if db_filepath:
+            db_specifier = local_db_specifier_from_file(db_filepath)
+        else:
+            db_specifier = LOCAL_DB_SPECIFIER
         engine = create_engine(db_specifier)
         self.session = Session(engine)
 
@@ -211,7 +214,7 @@ def prompt_confirm_selection(options, vals=None):
             return options[sel]
 
 def main(args):
-    editor = Editor()
+    editor = Editor(args.db)
     editor.get_trainer()
 
     ## return
@@ -280,5 +283,7 @@ def prompt_stat(stat_data):
 
 if __name__ == '__main__':
     parser = ArgumentParser("Fill in non-user-submitted data to a db. Can be re-run to add new survey rows.")
+    parser.add_argument("db", nargs='?', default="pogo_sj.db",
+                        help="Database file to work with. Default: %(default)s")
     args = parser.parse_args()
     main(args)
