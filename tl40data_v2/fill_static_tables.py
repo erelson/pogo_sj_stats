@@ -49,6 +49,7 @@ def fill_stats(session: Session, changed: bool = False):
                 changed = True
             stat.order_idx = existing_stat_idx
         else:  # add new stat in the database; its idx is essentially len(stats)
+            print(f"Adding '{stat_name}' to 'stats' table...")
             stat = Stat(name=stat_name, order_idx=new_stat_order_idx,
                         **dict(zip(json_stat_names, json_stat_vals[stat_name])))
             changed = True

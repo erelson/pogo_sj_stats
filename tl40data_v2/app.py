@@ -508,7 +508,9 @@ def fill_test_survey():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("secret_key", action='store')
-    parser.add_argument("--test-get-survey-data", action='store_true')
+    parser.add_argument("--test-get-survey-data", action='store_true'
+                        help="Test just the loading of the survey data, to verify e.g. "
+                        "it's in the order expected.")
     parser.add_argument("--test-user", action='store', default=None)
     args = parser.parse_args()
 
