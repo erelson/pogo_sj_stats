@@ -89,7 +89,7 @@ def get_survey_data_in_survey_order(session, user=None):
                            0,  # previous value
                            ])
 
-    ## TODO user data will eventually factor in here too
+    # Get trainer's last survey data if any, to help set order, limits and hints on the survey page.
     trainer = None
     trainer_data = {}
     if user:
@@ -204,10 +204,10 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
             test code.
 
     Returns:
-        A class with attributes set, ready to be instantiated.
+        A formclass with attributes set, ready to be instantiated.
     """
     statlist = []  # lookup of attribute names on the FormClass which hold Field objects
-    statorder = []  # list of booleans
+    statdivider = []  # list of booleans: when True, jinja2 template script will add a divider after the stat
     # TODO(enhancement) this is stupidly brittle? Every time I add a new non-badge stat...? or if we get too many badges
     # See also shenanigans around line 150 above.
     sections = [20, 100, 200, 300, 400, 500, 600, 700, 800, 900, 10000]
@@ -220,11 +220,11 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
             previous_val = int(previous_val_str.split()[0])
         #print(section_idx, order, stat.icon)
         if order > sections[section_idx]:
-            statorder.append(True)
+            statdivider.append(True)
             while order > sections[section_idx]:
                 section_idx += 1
         else:
-            statorder.append(False)
+            statdivider.append(False)
 
         #print(stat.name, previous_val_str)
         if stat.name == 'Trainer Level':
@@ -259,8 +259,6 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
                                  )
         else:
             field = IntegerField(stat.name, validators=checks,
-                                 # TODO move this image part to a setatrr call?
-                                 #image="imgs/" + stat.icon + ".png",  # accessed with statlist[i].kwargs['image']
                                  default=default_val, # Could use this but it fills a valid value. Use render_kw["placeholder"] instead
                                  render_kw={"inputmode": "numeric", "type": "number",
                                             "placeholder": previous_val_str,
@@ -273,12 +271,13 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
         setattr(formclass, str(stat.icon), field)  # using icon because name has spaces in it
         # Order of newly added attrs is preserved in statlist
         statlist.append(stat.icon)
+
     setattr(formclass, "statlist", statlist)
-    setattr(formclass, "statorder", statorder)
+    setattr(formclass, "statdivider", statdivider)
     # https://gaming.stackexchange.com/a/281007
     trainername = StringField('Trainer Name',
                               validators=[validators.Length(min=4, max=15),
-                                          validators.Regexp(regex="^[\w\d]+$",
+                                          validators.Regexp(regex=r"^[\w\d]+$",
                                                             message="Trainer name can only be letters and numbers"),
                                   ])
     formclass.trainername = trainername
@@ -508,7 +507,7 @@ def fill_test_survey():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("secret_key", action='store')
-    parser.add_argument("--test-get-survey-data", action='store_true'
+    parser.add_argument("--test-get-survey-data", action='store_true',
                         help="Test just the loading of the survey data, to verify e.g. "
                         "it's in the order expected.")
     parser.add_argument("--test-user", action='store', default=None)
