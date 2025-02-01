@@ -106,7 +106,8 @@ class Editor():
             # List of [response_id, month/year] pairs for trainer_id
             trainer_surveys = [[response, data["month"]] for response, data in self.response_refs.items()
                                 if data["trainer_id"] == trainer_id]
-            survey = prompt_survey(trainer_surveys[-10:])
+            # choose from 10 most recent surveys for trainer, most recent first
+            survey = prompt_survey(trainer_surveys[-1:-11:-1])
             if not survey or survey == "abort":
                 return
             self.get_stat(survey)
