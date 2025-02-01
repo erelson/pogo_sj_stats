@@ -39,14 +39,15 @@ class Stat(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     short_name = Column(String, unique=True)  # or make this the primary key?
-    icon = Column(String)
-    numtype = Column(String)
-    bronze = Column(Integer)
-    silver = Column(Integer)
-    gold = Column(Integer)
-    platinum = Column(Integer)
-    maximum = Column(Integer)
-    required = Column(Boolean)
+    # Because migrations are more effort, I started just using stats.json for every field below
+    icon = Column(String)  # TODO Unused; stats.json used instead
+    numtype = Column(String)  # TODO Unused; stats.json used instead
+    bronze = Column(Integer)  # TODO Unused; stats.json used instead
+    silver = Column(Integer)  # TODO Unused; stats.json used instead
+    gold = Column(Integer)  # TODO Unused; stats.json used instead
+    platinum = Column(Integer)  # TODO Unused; stats.json used instead
+    maximum = Column(Integer)  # TODO Unused; stats.json used instead
+    required = Column(Boolean)  # TODO Unused; stats.json used instead; also now using signed integers
     monotonic = Column(Boolean)  # TODO nullable? what has been stored to-date?
     order_idx = Column(Integer)  # dictates stat order aka position in response.strdata
                                  # Note that survey display order is DIFFERENT (it's from stats.json)

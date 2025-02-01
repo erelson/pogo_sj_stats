@@ -68,3 +68,10 @@ Old manual way:
 1. Update title-case name in stats.json
 1. Edit title-case name in db with sqlitebrowser
 1. Upload stats.json and db to server
+
+## Removing a stat from the survey
+As an example: with the new pokédex UI in early 2025, the 3* dexes were removed.
+
+1. Edit stats.json, and change each stat to be removed to have the `required` field set to -1.
+   This will prevent it being displayed. Under the hood, the DB will still record 0s for removed
+   stats.

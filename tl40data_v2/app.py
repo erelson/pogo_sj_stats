@@ -213,6 +213,10 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
     sections = [20, 100, 200, 300, 400, 500, 600, 700, 800, 900, 10000]
     section_idx = 0
     for order, stat, previous_val_str in stats_list:  # in order already
+        # required == -1 stats are no longer collected
+        if stat.required == -1:
+            continue
+        # Strings are "123 (badge level)" so need to strip second part before casting
         # This previous_val_str to previous_val crap would be good to clean up.
         if stat.numtype == "Float":
             previous_val = float(previous_val_str.split()[0])
@@ -230,7 +234,6 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
         if stat.name == 'Trainer Level':
             minimum = max(40, previous_val)
         elif stat.monotonic:
-            # We're passing in "123 (badge level)" so need to strip second part before casting
             try:
                 minimum = previous_val  # todo floats
             except:
@@ -244,7 +247,7 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
         if previous_val == stat.maximum:  # Note there are no stats with maximums that are also float values.
             # Fill in the field for already-maxed stats.
             default_val = previous_val
-        elif not stat.required:
+        elif stat.required == 0:
             checks = [validators.Optional()] + checks
         if stat.numtype == "Float":
             # TODO fix float input here?
@@ -380,6 +383,7 @@ def fill_survey(user=None):
         # e.g. app.py was run with --test-get-survey-data or similar option
         request_method = 'POST'
         form_validated = True
+    # POST via Submit button on survey with validation passing
     if request_method == 'POST' and form_validated:
         # If valid
             # Display validation success

@@ -13,192 +13,192 @@
   "data":
   {
     "Total XP":
-      ["Integer",0,0,0,0,-1,true,true,"total_xp"],
+      ["Integer",0,0,0,0,-1,true,1,"total_xp"],
     "Trainer Level":
-      ["Integer",0,0,0,0,50,true,true,"trainer_level"],
+      ["Integer",0,0,0,0,50,true,1,"trainer_level"],
     "Unique Species Caught":
-      ["Integer",0,0,0,0,883,true,true,"pokedex_caught"],
+      ["Integer",0,0,0,0,883,true,1,"pokedex_caught"],
     "Unique Species Seen":
-      ["Integer",0,0,0,0,883,true,true,"pokedex_seen"],
+      ["Integer",0,0,0,0,883,true,1,"pokedex_seen"],
     "Unknown Generation":
-      ["Integer",0,0,0,0,2,true,true,"pokedex_entries_unknown"],
+      ["Integer",0,0,0,0,2,true,1,"pokedex_entries_unknown"],
     "Special Dex: Purified":
-      ["Integer",0,0,0,0,382,true,false,"pokedex_purified"],
+      ["Integer",0,0,0,0,382,true,0,"pokedex_purified"],
     "Special Dex: Shadow":
-      ["Integer",0,0,0,0,382,true,false,"pokedex_shadow"],
+      ["Integer",0,0,0,0,382,true,0,"pokedex_shadow"],
     "Special Dex: Perfect":
-      ["Integer",0,0,0,0,883,true,false,"pokedex_4star"],
+      ["Integer",0,0,0,0,883,true,0,"pokedex_4star"],
     "Special Dex: 3 Stars":
-      ["Integer",0,0,0,0,883,true,false,"pokedex_3star"],
+      ["Integer",0,0,0,0,883,true,0,"pokedex_3star"],
     "Special Dex: Shiny 3 Stars":
-      ["Integer",0,0,0,0,793,true,false,"pokedex_3star_shiny"],
+      ["Integer",0,0,0,0,793,true,0,"pokedex_3star_shiny"],
     "Special Dex: Shiny":
-      ["Integer",0,0,0,0,793,true,false,"pokedex_shiny"],
+      ["Integer",0,0,0,0,793,true,0,"pokedex_shiny"],
     "Special Dex: Lucky":
-      ["Integer",0,0,0,0,868,true,false,"pokedex_lucky"],
+      ["Integer",0,0,0,0,868,true,0,"pokedex_lucky"],
     "Special Dex: Event/Costume":
-      ["Integer",0,0,0,0,249,true,false,"pokedex_event"],
+      ["Integer",0,0,0,0,249,true,0,"pokedex_event"],
     "Special Dex: Gigantamax":
-      ["Integer",0,0,0,0,6,true,false,"pokedex_gmax"],
+      ["Integer",0,0,0,0,6,true,0,"pokedex_gmax"],
     "Stardust":
-      ["Integer",0,0,0,0,-1,false,false,"pokemon_info_stardust"],
+      ["Integer",0,0,0,0,-1,false,0,"pokemon_info_stardust"],
     "Go Battle League - Overall Wins":
-      ["Integer",0,0,0,0,-1,true,true,"go_battle_league_overall_wins"],
+      ["Integer",0,0,0,0,-1,true,1,"go_battle_league_overall_wins"],
     "Go Battle League - Overall Played":
-      ["Integer",0,0,0,0,-1,true,true,"go_battle_league_overall_played"],
+      ["Integer",0,0,0,0,-1,true,1,"go_battle_league_overall_played"],
     "Go Battle League - Overall Streak":
-      ["Integer",0,0,0,0,-1,true,true,"go_battle_league_overall_streak"],
+      ["Integer",0,0,0,0,-1,true,1,"go_battle_league_overall_streak"],
     "Unique Route Badges":
-      ["Integer",0,0,0,0,-1,true,false,"routes_completed"],
+      ["Integer",0,0,0,0,-1,true,0,"routes_completed"],
     "Gym Badges":
-      ["Integer",0,0,0,0,1000,true,false,"gymbadges_total"],
+      ["Integer",0,0,0,0,1000,true,0,"gymbadges_total"],
     "Gold Gym Badges":
-      ["Integer",0,0,0,0,-1,true,false,"gymbadges_gold"],
+      ["Integer",0,0,0,0,-1,true,0,"gymbadges_gold"],
     "Elite Collector":
-      ["Integer",0,0,0,0,-1,true,true,"elite_collector_challenge","comment: being lazy on maximum here"],
+      ["Integer",0,0,0,0,-1,true,1,"elite_collector_challenge","comment: being lazy on maximum here"],
     "Jogger":
-      ["Float",10,100,1000,10000,-1,true,false,"travel_km"],
+      ["Float",10,100,1000,10000,-1,true,0,"travel_km"],
     "Kanto":
-      ["Integer",5,50,100,151,151,true,true,"pokedex_entries"],
+      ["Integer",5,50,100,151,151,true,1,"pokedex_entries"],
     "Collector":
-      ["Integer",30,500,2000,50000,-1,true,true,"capture_total"],
+      ["Integer",30,500,2000,50000,-1,true,1,"capture_total"],
     "Scientist":
-      ["Integer",3,20,200,2000,-1,true,true,"evolved_total"],
+      ["Integer",3,20,200,2000,-1,true,1,"evolved_total"],
     "Breeder":
-      ["Integer",10,100,500,2500,-1,true,true,"hatched_total"],
+      ["Integer",10,100,500,2500,-1,true,1,"hatched_total"],
     "Backpacker":
-      ["Integer",100,1000,2000,50000,-1,true,true,"pokestops_visited"],
+      ["Integer",100,1000,2000,50000,-1,true,1,"pokestops_visited"],
     "Sightseer":
-      ["Integer",10,100,1000,2000,-1,true,true,"pokestops_visited_unique"],
+      ["Integer",10,100,1000,2000,-1,true,1,"pokestops_visited_unique"],
     "Fisher":
-      ["Integer",3,50,300,1000,-1,true,true,"big_magikarp"],
+      ["Integer",3,50,300,1000,-1,true,1,"big_magikarp"],
     "Battle Girl":
-      ["Integer",10,100,1000,4000,-1,true,true,"battle_attack_won"],
+      ["Integer",10,100,1000,4000,-1,true,1,"battle_attack_won"],
     "Ace Trainer":
-      ["Integer",10,100,1000,2000,-1,true,true,"battle_training_won"],
+      ["Integer",10,100,1000,2000,-1,true,1,"battle_training_won"],
     "Youngster":
-      ["Integer",3,50,300,1000,-1,true,true,"small_rattata"],
+      ["Integer",3,50,300,1000,-1,true,1,"small_rattata"],
     "Pikachu Fan":
-      ["Integer",3,50,300,1000,-1,true,true,"pikachu"],
+      ["Integer",3,50,300,1000,-1,true,1,"pikachu"],
     "Unown":
-      ["Integer",3,10,26,28,28,true,true,"unown"],
+      ["Integer",3,10,26,28,28,true,1,"unown"],
     "Johto":
-      ["Integer",5,30,70,100,100,true,true,"pokedex_entries_gen2"],
+      ["Integer",5,30,70,100,100,true,1,"pokedex_entries_gen2"],
     "Champion":
-      ["Integer",10,100,1000,2000,-1,true,true,"raid_battle_won"],
+      ["Integer",10,100,1000,2000,-1,true,1,"raid_battle_won"],
     "Battle Legend":
-      ["Integer",10,100,1000,2000,-1,true,true,"legendary_battle_won"],
+      ["Integer",10,100,1000,2000,-1,true,1,"legendary_battle_won"],
     "Berry Master":
-      ["Integer",10,100,1000,15000,-1,true,true,"berries_fed"],
+      ["Integer",10,100,1000,15000,-1,true,1,"berries_fed"],
     "Gym Leader":
-      ["Integer",10,100,1000,15000,-1,true,true,"hours_defended"],
+      ["Integer",10,100,1000,15000,-1,true,1,"hours_defended"],
     "Hoenn":
-      ["Integer",5,40,90,135,135,true,true,"pokedex_entries_gen3"],
+      ["Integer",5,40,90,135,135,true,1,"pokedex_entries_gen3"],
     "Pokémon Ranger":
-      ["Integer",10,100,1000,2500,-1,true,true,"challenge_quests"],
+      ["Integer",10,100,1000,2500,-1,true,1,"challenge_quests"],
     "Idol":
-      ["Integer",1,2,3,20,-1,true,true,"max_level_friends"],
+      ["Integer",1,2,3,20,-1,true,1,"max_level_friends"],
     "Gentleman":
-      ["Integer",10,100,1000,2500,-1,true,true,"trading"],
+      ["Integer",10,100,1000,2500,-1,true,1,"trading"],
     "Pilot":
-      ["Integer",1000,100000,1000000,10000000,-1,true,true,"trading_distance"],
+      ["Integer",1000,100000,1000000,10000000,-1,true,1,"trading_distance"],
     "Sinnoh":
-      ["Integer",5,30,80,107,104,true,true,"pokedex_entries_gen4"],
+      ["Integer",5,30,80,107,104,true,1,"pokedex_entries_gen4"],
     "Great League Veteran":
-      ["Integer",5,50,200,1000,-1,true,true,"great_league"],
+      ["Integer",5,50,200,1000,-1,true,1,"great_league"],
     "Ultra League Veteran":
-      ["Integer",5,50,200,1000,-1,true,true,"ultra_league"],
+      ["Integer",5,50,200,1000,-1,true,1,"ultra_league"],
     "Master League Veteran":
-      ["Integer",5,50,200,1000,-1,true,true,"master_league"],
+      ["Integer",5,50,200,1000,-1,true,1,"master_league"],
     "Cameraman":
-      ["Integer",10,50,200,400,-1,true,true,"photobomb"],
+      ["Integer",10,50,200,400,-1,true,1,"photobomb"],
     "Unova":
-      ["Integer",5,50,100,156,156,true,true,"pokedex_entries_gen5"],
+      ["Integer",5,50,100,156,156,true,1,"pokedex_entries_gen5"],
     "Purifier":
-      ["Integer",5,50,500,1000,-1,true,true,"purifier"],
+      ["Integer",5,50,500,1000,-1,true,1,"purifier"],
     "Hero":
-      ["Integer",10,100,1000,2000,-1,true,true,"hero"],
+      ["Integer",10,100,1000,2000,-1,true,1,"hero"],
     "Ultra Hero":
-      ["Integer",1,5,20,50,-1,true,true,"ultra_hero"],
+      ["Integer",1,5,20,50,-1,true,1,"ultra_hero"],
     "Best Buddy":
-      ["Integer",1,10,100,200,-1,true,true,"best_buddy"],
+      ["Integer",1,10,100,200,-1,true,1,"best_buddy"],
     "Kalos":
-      ["Integer",5,25,50,72,68,true,true,"pokedex_entries_gen6"],
+      ["Integer",5,25,50,72,68,true,1,"pokedex_entries_gen6"],
     "Alola":
-      ["Integer",5,25,50,86,75,true,true,"pokedex_entries_gen7"],
+      ["Integer",5,25,50,86,75,true,1,"pokedex_entries_gen7"],
     "Galar":
-      ["Integer",5,25,50,89,40,true,true,"pokedex_entries_gen8"],
+      ["Integer",5,25,50,89,40,true,1,"pokedex_entries_gen8"],
     "Triathlete":
-      ["Integer",1,10,50,100,-1,true,true,"pokestreak"],
+      ["Integer",1,10,50,100,-1,true,1,"pokestreak"],
     "Rising Star":
-      ["Integer",2,10,50,150,-1,true,true,"raid_battle_unique"],
+      ["Integer",2,10,50,150,-1,true,1,"raid_battle_unique"],
     "Rising Star Duo":
-      ["Integer",10,100,1000,2000,-1,true,true,"raid_battle_friends"],
+      ["Integer",10,100,1000,2000,-1,true,1,"raid_battle_friends"],
     "Picnicker":
-      ["Integer",5,25,500,2500,-1,true,true,"lure_module_catches"],
+      ["Integer",5,25,500,2500,-1,true,1,"lure_module_catches"],
     "Wayfarer":
-      ["Integer",50,500,1000,1500,-1,true,false,"wayfarer_agreements"],
+      ["Integer",50,500,1000,1500,-1,true,0,"wayfarer_agreements"],
     "Successor":
-      ["Integer",1,50,500,1000,-1,true,true,"mega_evolves"],
+      ["Integer",1,50,500,1000,-1,true,1,"mega_evolves"],
     "Mega/Primal Evolution Guru":
-      ["Integer",1,24,36,46,44,true,true,"pokedex_entries_mega_dex"],
+      ["Integer",1,24,36,46,44,true,1,"pokedex_entries_mega_dex"],
     "Expert Navigator":
-      ["Integer",10,50,200,600,-1,true,false,"routes_trips"],
+      ["Integer",10,50,200,600,-1,true,0,"routes_trips"],
     "Paldea":
-      ["Integer",5,30,80,103,46,true,true,"pokedex_entries_gen10"],
+      ["Integer",5,30,80,103,46,true,1,"pokedex_entries_gen10"],
     "Hisui":
-      ["Integer",1,3,5,7,6,true,true,"pokedex_entries_gen9"],
+      ["Integer",1,3,5,7,6,true,1,"pokedex_entries_gen9"],
     "Friend Finder":
-      ["Integer",1,10,20,50,-1,true,false,"referral"],
+      ["Integer",1,10,20,50,-1,true,0,"referral"],
     "Raid Expert":
-      ["Integer",1,50,200,500,-1,true,true,"raid_expert"],
+      ["Integer",1,50,200,500,-1,true,1,"raid_expert"],
     "Tiny Pokémon Collector":
-      ["Integer",5,25,100,500,-1,true,true,"tinycollector"],
+      ["Integer",5,25,100,500,-1,true,1,"tinycollector"],
     "Jumbo Pokémon Collector":
-      ["Integer",5,25,100,500,-1,true,true,"jumbocollector"],
+      ["Integer",5,25,100,500,-1,true,1,"jumbocollector"],
     "Life of the Party":
-      ["Integer",10,50,100,200,-1,true,true,"lifeofparty"],
+      ["Integer",10,50,100,200,-1,true,1,"lifeofparty"],
     "Community Member":
-      ["Integer",1,20,50,100,-1,true,true,"community_member"],
+      ["Integer",1,20,50,100,-1,true,1,"community_member"],
     "Showcase Star":
-      ["Integer",1,10,50,100,-1,true,false,"showcase"],
+      ["Integer",1,10,50,100,-1,true,0,"showcase"],
     "Vivillon Collector":
-      ["Integer",3,10,15,18,18,true,true,"vivilloncollector"],
+      ["Integer",3,10,15,18,18,true,1,"vivilloncollector"],
     "Schoolkid":
-      ["Integer",10,50,200,2500,-1,true,false,"type_normal"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_normal"],
     "Black Belt":
-      ["Integer",10,50,200,2500,-1,true,false,"type_fighting"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_fighting"],
     "Bird Keeper":
-      ["Integer",10,50,200,2500,-1,true,false,"type_flying"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_flying"],
     "Punk Girl":
-      ["Integer",10,50,200,2500,-1,true,false,"type_poison"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_poison"],
     "Ruin Maniac":
-      ["Integer",10,50,200,2500,-1,true,false,"type_ground"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_ground"],
     "Hiker":
-      ["Integer",10,50,200,2500,-1,true,false,"type_rock"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_rock"],
     "Bug Catcher":
-      ["Integer",10,50,200,2500,-1,true,false,"type_bug"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_bug"],
     "Hex Maniac":
-      ["Integer",10,50,200,2500,-1,true,false,"type_ghost"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_ghost"],
     "Rail Staff":
-      ["Integer",10,50,200,2500,-1,true,false,"type_steel"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_steel"],
     "Kindler":
-      ["Integer",10,50,200,2500,-1,true,false,"type_fire"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_fire"],
     "Swimmer":
-      ["Integer",10,50,200,2500,-1,true,false,"type_water"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_water"],
     "Gardener":
-      ["Integer",10,50,200,2500,-1,true,false,"type_grass"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_grass"],
     "Rocker":
-      ["Integer",10,50,200,2500,-1,true,false,"type_electric"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_electric"],
     "Psychic":
-      ["Integer",10,50,200,2500,-1,true,false,"type_psychic"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_psychic"],
     "Skier":
-      ["Integer",10,50,200,2500,-1,true,false,"type_ice"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_ice"],
     "Dragon Tamer":
-      ["Integer",10,50,200,2500,-1,true,false,"type_dragon"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_dragon"],
     "Delinquent":
-      ["Integer",10,50,200,2500,-1,true,false,"type_dark"],
+      ["Integer",10,50,200,2500,-1,true,0,"type_dark"],
     "Fairy Tale Girl":
-      ["Integer",10,50,200,2500,-1,true,false,"type_fairy"]
+      ["Integer",10,50,200,2500,-1,true,0,"type_fairy"]
   }
 }
