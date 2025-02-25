@@ -3,17 +3,13 @@
 # Standard library
 from argparse import ArgumentParser
 import datetime
-import os
 
 # Third party
 import sqlalchemy
 from sqlalchemy import (Boolean, Column, DateTime, ForeignKey,
-                        select, Integer, PickleType, String)
-from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import registry, declarative_base, relationship, Session
+                        Integer, String)
+from sqlalchemy.orm import declarative_base, relationship, Session
 from sqlalchemy import create_engine, event
-from sqlalchemy.orm.exc import NoResultFound, UnmappedInstanceError
-import sqlite3
 
 # Local
 from settings import LOCAL_DB_SPECIFIER 
@@ -206,6 +202,24 @@ class Response(Base):
         stat_data = session.query(Stat.icon).order_by(Stat.order_idx).all()  # list of tuples
         stat_data_dict = {icon[0]: 0 for icon in stat_data}
 
+        # Get trainer object or create it if needed
+        if not timestamp:
+            timestamp = str(datetime.datetime.now().timestamp())
+        trainer_proper_name = response_values["trainername"]
+        trainer = trainer_proper_name.lower()
+        trainer_obj = session.query(Trainer).filter(Trainer.name == trainer).first()
+        if trainer_obj is None:
+            trainer_obj = Trainer(name=trainer, proper_name=trainer_proper_name, start_date=timestamp)
+            session.add(trainer_obj)
+            session.flush()  # copilot
+            session.commit()  # copilot
+
+        # Get previous survey's values (if any)
+        if trainer_obj:
+            # trainer_data will be a dict by stat name of values from previous response
+            # stderr is used ... why?
+            previous_trainer_data = trainer_obj.get_newest_response(session)  # May be None if trainer added above
+
         # Put response values in DB's order of Stats.
         # Any unfilled values are set to 0...
         #key_val_order.sort(key=lambda x: x[2])
@@ -218,21 +232,16 @@ class Response(Base):
             if k == "trainername":
                 continue
             stat_data_dict[k] = v
+        # Any stats with value 0 are checked against the previous survey to get an alternate value. See above for more info
+        if previous_trainer_data:
+            for k, v in stat_data_dict:
+                if v == 0 and previous_trainer_data[k] != 0:
+                    stat_data_dict[k] = previous_trainer_data[k]
         # Then make the values a single string
         # The values are in order of the order in the DB (NOT the orderidx column though)
         strdata = ";".join(str(val) for val in stat_data_dict.values())
 
         # Response DB object
-        if not timestamp:
-            timestamp = str(datetime.datetime.now().timestamp())
-        trainer_proper_name = response_values["trainername"]
-        trainer = trainer_proper_name.lower()
-        trainer_obj = session.query(Trainer).filter(Trainer.name == trainer).first()
-        if trainer_obj is None:
-            trainer_obj = Trainer(name=trainer, proper_name=trainer_proper_name, start_date=timestamp)
-            session.add(trainer_obj)
-            session.flush()  # copilot
-            session.commit()  # copilot
         response = cls(trainer_id=trainer_obj.id, timestamp=timestamp, strdata=strdata, revision=1)
 
         # Add response object, so we can get the id

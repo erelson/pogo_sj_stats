@@ -101,13 +101,13 @@ def get_survey_data_in_survey_order(session, user=None):
     if trainer:
         # trainer_data will be a dict by stat name of values from previous response
         # stderr is used ... why?
-        trainer_data = trainer.get_newest_response(session)  # May be None for newly added trainer
+        trainer_data = trainer.get_newest_response(session)  # May be None for newly (manually?) added trainer
         if trainer_data is None:
             print(f"Got NO data for trainer {user}..", file=sys.stderr)
+            # NOTE this probably shouldn't happen and doesn't happen... so TODO should be an exception
         else:
             print(f"Got trainer {user} data.. non-None? {trainer_data != None}", file=sys.stderr)
 
-    print(f"Trainer data for {user}: {trainer_data}")  # TODO printing this isn't useful? Probably true
     # Calculate offsets for each stat category
     # For each stat category, iterate through its badge amounts, calculating offsets based on previous stat amount.
     # Use cnt as index in stats_list, generated from stats_vals.
@@ -195,6 +195,8 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
     """Sets survey fields as attrs on form object
 
     Also inserts sectional breaks.
+
+    Stats with "required = -1" are not not included in the form (survey).
 
     Args:
         stats_list: list of Stat objects. Each list will drive a input field on the form.
