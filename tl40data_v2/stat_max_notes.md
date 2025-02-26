@@ -2,6 +2,12 @@ New reference of choice:
 ===
 https://godex.site
 
+And I don't do manual updating anymore. Instead I run:
+
+```
+python3 parse_and_update_from_godex.site.py
+```
+
 Values that I offset from this site's reported values for:
 - Event dex (-4)
   - the 4 clone mons are counted but don't show in game's dex
