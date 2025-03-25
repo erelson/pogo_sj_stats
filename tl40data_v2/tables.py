@@ -12,7 +12,7 @@ from sqlalchemy.orm import declarative_base, relationship, Session
 from sqlalchemy import create_engine, event
 
 # Local
-from settings import LOCAL_DB_SPECIFIER 
+from settings import LOCAL_DB_SPECIFIER
 
 
 Base = declarative_base()
@@ -57,7 +57,7 @@ class Stat(Base):
         #print(self.icon)
 
     @classmethod
-    def get_all_names(cls, session):
+    def get_all_stat_names(cls, session):
         """Get all stat names in DB order, like ['Total XP', 'Trainer Level', ...]
 
         Returns:
@@ -85,8 +85,7 @@ class Stat(Base):
         Returns:
             dict: A dictionary of stat names and values
         """
-        # 
-        names = cls.get_all_names(session)
+        names = cls.get_all_stat_names(session)
         names = [name[0] for name in names]
         # strdata is inserted in db-matching order, so we know the order after splitting.
         strdata_vals = strdata.split(";")
@@ -150,7 +149,7 @@ class Trainer(Base):
         """Get a dictionary of latest response information for this trainer
 
         Returns:
-            List of tuples of (key, value) for each stat in the response
+            Dictionary (key: value) for each stat in the response
         """
         # TODO Do we need to do a query here? Or can we just return the newest_response attribute
         if not self.newest_response:
@@ -160,7 +159,7 @@ class Trainer(Base):
         # Get the Response object from the integer id self.newest_response
         response = session.query(Response).filter(Response.id == self.newest_response).one()
         response_values = response.strdata.split(";")
-        response_dict = dict(zip(Stat.get_all_names(session), response_values))
+        response_dict = dict(zip(Stat.get_all_stat_names(session), response_values))
         return response_dict
 
 
@@ -188,7 +187,13 @@ class Response(Base):
 
     @classmethod
     def save_response(cls, session, response_values, timestamp=None):
-        """Save a response to the database"""
+        """Save a response to the database
+
+        We start with an dict of zero values for all stats that the DB knows about.
+        We then take the stats the response contains, and use their values to replace the zeros.
+        If the response (aka survey the user saw) does not contain all of the stats, some of these
+        will remain zero.  (this lets us retire stats from the survey, without cleaning them up from the db...)
+        """
         # TODO simple hack for now: we do a list comprehension below where we skip just the "trainername"
         # response_values is expected to be a:
         #   CombinedMultiDict(get, post)
@@ -234,9 +239,17 @@ class Response(Base):
             stat_data_dict[k] = v
         # Any stats with value 0 are checked against the previous survey to get an alternate value. See above for more info
         if previous_trainer_data:
-            for k, v in stat_data_dict:
-                if v == 0 and previous_trainer_data[k] != 0:
-                    stat_data_dict[k] = previous_trainer_data[k]
+            printed_keys = False
+            for k, v in stat_data_dict.items():
+                try:
+                    if v == 0 and previous_trainer_data[k] != 0:
+                        stat_data_dict[k] = previous_trainer_data[k]
+                except KeyError as e:
+                    print(repr(e))
+                    if not printed_keys:
+                        print("tables.save_response: above key was not seen in previous_trainer_data; available keys:")
+                        print(list(previous_trainer_data.keys()))
+                        printed_keys = True
         # Then make the values a single string
         # The values are in order of the order in the DB (NOT the orderidx column though)
         strdata = ";".join(str(val) for val in stat_data_dict.values())
@@ -285,7 +298,7 @@ def main():
     parser = ArgumentParser("Fill in non-user-submitted data to a db")
     args = parser.parse_args()
 
-    db_specifier = LOCAL_DB_SPECIFIER 
+    db_specifier = LOCAL_DB_SPECIFIER
     #engine = get_engine(db_specifier)
     engine = create_engine(db_specifier)
 
