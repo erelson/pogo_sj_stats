@@ -32,18 +32,19 @@ DAY_TO_INT = dict(zip(calendar.day_name, range(7)))
 SURVEY_LINK = "http://pogo.gertlex.com/survey"
 
 # Note that the survey ignores the regular dex count. Our "Sum of All" doesn't include this, which is rather arbitrary.
-DEX_NAMES = ["Unique Species Caught",
-             "Special Dex: Purified",
-             "Special Dex: Shadow",
-             "Special Dex: Perfect",
+DEX_NAMES = ["Pokédex: Total",
+             "Pokédex: Purified",
+             "Pokédex: Shadow",
+             "Pokédex: Perfect",
              #"Special Dex: 3 Stars",
              #"Special Dex: Shiny 3 Stars",
-             "Special Dex: Shiny",
-             "Special Dex: Lucky",
-             "Special Dex: XXL",
-             "Special Dex: XXS",
+             "Pokédex: Shiny",
+             "Pokédex: Lucky",
+             "Pokédex: XXL",
+             "Pokédex: XXS",
              #"Special Dex: Event/Costume",
-             "Mega/Primal Evolution Guru"]#, "Special Dex: Sum of All Dex Counts"]
+             "Pokédex: G-Max",
+             "Mega/Primal Evolution Guru"#, "Special Dex: Sum of All Dex Counts"]
 N_TYPE_MEDALS = 18
 STATNAME_DEX_SUM = "Sum of All Dex Counts"
 

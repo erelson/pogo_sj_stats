@@ -1,25 +1,32 @@
 #! /usr/bin/env python3
+
+"""Paste the browser-visible content of godex.site, with my custom defined
+pokedexes to match in-game limits, into this script's prompt to auto-update
+stats.json.
+"""
+
 import json
 import re
 import shlex
+from argparse import ArgumentParser
 from subprocess import run
 
 
 # Mapping between the particular dex names I defined for myself at godex.site, to the stat names in stats.json
 mappings = {
-        "Event (non-clone, non-size)": ["Special Dex: Event/Costume"],
-        "Go Dex Simple": ["Unique Species Caught", "Unique Species Seen", "Special Dex: Perfect", "Special Dex: 3 Stars"],
-        "Lucky Simple": ["Special Dex: Lucky"],
-        "Mega": ["Mega/Primal Evolution Guru"],
+        "Event (non-clone, non-size)": ["Pokédex: Event/Costume"],
+        "Go Dex Simple": ["Pokédex: Total", "Unique Species Seen", "Pokédex: Perfect", "Pokédex: 3 Stars", "Pokédex: XXL", "Pokédex: XXS"],
+        "Lucky Simple": ["Pokédex: Lucky"],
+        "Mega": ["Mega/Primal Evolution Guru", "Pokédex: Mega"],
         #"National Dex": "",
         #"Purified": "",
-        "Purified simple": ["Special Dex: Purified"],
+        "Purified simple": ["Pokédex: Purified"],
         #"Shadow": "",
-        "Shadow Simple": ["Special Dex: Shadow"],
+        "Shadow Simple": ["Pokédex: Shadow"],
         #"Shiny Event Dex": "",
         #"Shiny Purified": "",
-        "Shiny simple": ["Special Dex: Shiny 3 Stars", "Special Dex: Shiny"],
-        "Gigantamax": ["Special Dex: Gigantamax"],
+        "Shiny simple": ["Pokédex: Shiny 3 Stars", "Pokédex: Shiny"],
+        "Gigantamax": ["Pokédex: G-Max"],
 
         "Kanto":   ["Kanto"],
         "Johto":   ["Johto"],
@@ -28,7 +35,7 @@ mappings = {
         "Unova":   ["Unova"],
         "Kalos":   ["Kalos"],
         "Alola":   ["Alola"],
-        "Unknown": ["Unknown Generation"],
+        #"Unknown": ["Unknown Generation"],
         "Galar":   ["Galar"],
         "Hisui":   ["Hisui"],
         "Paldea":  ["Paldea"],
@@ -214,4 +221,7 @@ def main():
 
 
 if __name__ == '__main__':
+    parser = ArgumentParser(description=__doc__)
+    # For now, argparse is just supporting --help output
+    args = parser.parse_args()
     main()

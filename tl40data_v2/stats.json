@@ -16,33 +16,35 @@
       ["Integer",0,0,0,0,-1,true,1,"total_xp"],
     "Trainer Level":
       ["Integer",0,0,0,0,50,true,1,"trainer_level"],
-    "Unique Species Caught":
+    "Pokédex: Total":
       ["Integer",0,0,0,0,884,true,1,"pokedex_caught"],
-    "Special Dex: Shiny":
+    "Pokédex: Shiny":
       ["Integer",0,0,0,0,803,true,1,"pokedex_shiny"],
-    "Special Dex: Lucky":
+    "Pokédex: Lucky":
       ["Integer",0,0,0,0,869,true,1,"pokedex_lucky"],
-    "Special Dex: XXL":
+    "Pokédex: XXL":
       ["Integer",0,0,0,0,884,true,1,"pokedex_xxl"],
-    "Special Dex: XXS":
+    "Pokédex: XXS":
       ["Integer",0,0,0,0,884,true,1,"pokedex_xxs"],
-    "Special Dex: Gigantamax":
+    "Pokédex: G-Max":
       ["Integer",0,0,0,0,7,true,1,"pokedex_gmax"],
-    "Special Dex: Shadow":
+    "Pokédex: Mega":
+      ["Integer",0,0,0,0,44,true,1,"pokedex_mega"],
+    "Pokédex: Shadow":
       ["Integer",0,0,0,0,382,true,1,"pokedex_shadow"],
-    "Special Dex: Purified":
+    "Pokédex: Purified":
       ["Integer",0,0,0,0,382,true,1,"pokedex_purified"],
-    "Special Dex: Perfect":
+    "Pokédex: ★ 100%":
       ["Integer",0,0,0,0,884,true,1,"pokedex_4star"],
     "Unique Species Seen":
       ["Integer",0,0,0,0,884,true,-1,"pokedex_seen"],
     "Unknown Generation":
       ["Integer",0,0,0,0,2,true,-1,"pokedex_entries_unknown"],
-    "Special Dex: 3 Stars":
+    "Pokédex: 3 Stars":
       ["Integer",0,0,0,0,884,true,-1,"pokedex_3star"],
-    "Special Dex: Shiny 3 Stars":
+    "Pokédex: Shiny 3 Stars":
       ["Integer",0,0,0,0,803,true,-1,"pokedex_3star_shiny"],
-    "Special Dex: Event/Costume":
+    "Pokédex: Event/Costume":
       ["Integer",0,0,0,0,253,true,-1,"pokedex_event"],
     "Stardust":
       ["Integer",0,0,0,0,-1,false,0,"pokemon_info_stardust"],

@@ -69,6 +69,8 @@ Old manual way:
 1. Update title-case name in stats.json
 1. Edit title-case name in db with sqlitebrowser
 1. Upload stats.json and db to server
+1. Update report_fields_1.json (tentative)
+1. Pokédex counts: Update dashboard_html_from_db.py
 
 ## Removing a stat from the survey
 As an example: with the new pokédex UI in early 2025, the 3* dexes were removed.
