@@ -78,7 +78,7 @@ class Editor():
             trainer_list = self.trainers_lookup.keys()
             inp = None
             while not inp:
-                inp = input("\nWhat trainer do you want to look at? ")
+                inp = input("\nWhat trainer do you want to look at? (q to abort) ")
                 if inp == 'q' or inp == 'abort':
                     print("Done for now")
                     return

@@ -17,29 +17,33 @@
     "Trainer Level":
       ["Integer",0,0,0,0,50,true,1,"trainer_level"],
     "Unique Species Caught":
-      ["Integer",0,0,0,0,884,true,-1,"pokedex_caught"],
+      ["Integer",0,0,0,0,884,true,1,"pokedex_caught"],
+    "Special Dex: Shiny":
+      ["Integer",0,0,0,0,803,true,1,"pokedex_shiny"],
+    "Special Dex: Lucky":
+      ["Integer",0,0,0,0,869,true,1,"pokedex_lucky"],
+    "Special Dex: XXL":
+      ["Integer",0,0,0,0,884,true,1,"pokedex_xxl"],
+    "Special Dex: XXS":
+      ["Integer",0,0,0,0,884,true,1,"pokedex_xxs"],
+    "Special Dex: Gigantamax":
+      ["Integer",0,0,0,0,7,true,1,"pokedex_gmax"],
+    "Special Dex: Shadow":
+      ["Integer",0,0,0,0,382,true,1,"pokedex_shadow"],
+    "Special Dex: Purified":
+      ["Integer",0,0,0,0,382,true,1,"pokedex_purified"],
+    "Special Dex: Perfect":
+      ["Integer",0,0,0,0,884,true,1,"pokedex_4star"],
     "Unique Species Seen":
       ["Integer",0,0,0,0,884,true,-1,"pokedex_seen"],
     "Unknown Generation":
       ["Integer",0,0,0,0,2,true,-1,"pokedex_entries_unknown"],
-    "Special Dex: Purified":
-      ["Integer",0,0,0,0,382,true,-1,"pokedex_purified"],
-    "Special Dex: Shadow":
-      ["Integer",0,0,0,0,382,true,-1,"pokedex_shadow"],
-    "Special Dex: Perfect":
-      ["Integer",0,0,0,0,884,true,-1,"pokedex_4star"],
     "Special Dex: 3 Stars":
       ["Integer",0,0,0,0,884,true,-1,"pokedex_3star"],
     "Special Dex: Shiny 3 Stars":
       ["Integer",0,0,0,0,803,true,-1,"pokedex_3star_shiny"],
-    "Special Dex: Shiny":
-      ["Integer",0,0,0,0,803,true,-1,"pokedex_shiny"],
-    "Special Dex: Lucky":
-      ["Integer",0,0,0,0,869,true,-1,"pokedex_lucky"],
     "Special Dex: Event/Costume":
       ["Integer",0,0,0,0,253,true,-1,"pokedex_event"],
-    "Special Dex: Gigantamax":
-      ["Integer",0,0,0,0,7,true,-1,"pokedex_gmax"],
     "Stardust":
       ["Integer",0,0,0,0,-1,false,0,"pokemon_info_stardust"],
     "Go Battle League - Overall Wins":

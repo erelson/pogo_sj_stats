@@ -31,17 +31,18 @@ platinum_counts_path = "../platinum_counts.json"
 DAY_TO_INT = dict(zip(calendar.day_name, range(7)))
 SURVEY_LINK = "http://pogo.gertlex.com/survey"
 
-N_DEX_ENTRIES = 9
 # Note that the survey ignores the regular dex count. Our "Sum of All" doesn't include this, which is rather arbitrary.
 DEX_NAMES = ["Unique Species Caught",
              "Special Dex: Purified",
              "Special Dex: Shadow",
              "Special Dex: Perfect",
-             "Special Dex: 3 Stars",
-             "Special Dex: Shiny 3 Stars",
+             #"Special Dex: 3 Stars",
+             #"Special Dex: Shiny 3 Stars",
              "Special Dex: Shiny",
              "Special Dex: Lucky",
-             "Special Dex: Event/Costume",
+             "Special Dex: XXL",
+             "Special Dex: XXS",
+             #"Special Dex: Event/Costume",
              "Mega/Primal Evolution Guru"]#, "Special Dex: Sum of All Dex Counts"]
 N_TYPE_MEDALS = 18
 STATNAME_DEX_SUM = "Sum of All Dex Counts"

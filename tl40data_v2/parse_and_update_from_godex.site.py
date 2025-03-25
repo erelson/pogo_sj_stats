@@ -201,6 +201,7 @@ def print_current_diff():
     run(shlex.split("git diff stats.json"))
 
 def main():
+    print("Go to https://godex.site/ and log in (assumes you have dexes set up to match mappings at top of script)")
     text = get_multiline_input_from_user()
     updates = parse_global_dexes(text)
     print("\nNow paste the contents of 'Go Dex Simple'...")

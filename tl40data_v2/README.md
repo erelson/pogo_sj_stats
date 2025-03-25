@@ -53,6 +53,7 @@ Old manual way:
     1. For medals, need to try and figure out the order of the new medal relative to other medals in stats.json
 1. Add to report_fields_1.json if desired. (these are really "leaderboard fields")
 1. Update platinum_counts.json if applicable
+1. Dex counts only: Update `dashboard_html_from_db.py`'s list of `DEX_NAMES` to aggregate
 1. Git commit the changes to the files above
 1. Find an icon image and put it in static/ (I don't version control these presently)
     1. e.g. from https://pokemongo.fandom.com/wiki/Medals
@@ -73,5 +74,8 @@ Old manual way:
 As an example: with the new pokédex UI in early 2025, the 3* dexes were removed.
 
 1. Edit stats.json, and change each stat to be removed to have the `required` field set to -1.
-   This will prevent it being displayed. Under the hood, the DB will still record 0s for removed
-   stats.
+   This will prevent it being displayed. Under the hood, the DB will still
+   record the last non-zero reported value (or 0) for removed stats.
+1. To remove it from the leaderboards, remove it from `report_fields_1.json`
+1. To remove dex counts from the "Sum of All Dex Counts", modify `DEX_NAMES` in
+   `dashboard_html_from_db.py`.
