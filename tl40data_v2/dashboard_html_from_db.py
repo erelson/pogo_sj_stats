@@ -35,7 +35,7 @@ SURVEY_LINK = "http://pogo.gertlex.com/survey"
 DEX_NAMES = ["Pokédex: Total",
              "Pokédex: Purified",
              "Pokédex: Shadow",
-             "Pokédex: Perfect",
+             "Pokédex: ★ 100%",
              #"Special Dex: 3 Stars",
              #"Special Dex: Shiny 3 Stars",
              "Pokédex: Shiny",
@@ -44,7 +44,9 @@ DEX_NAMES = ["Pokédex: Total",
              "Pokédex: XXS",
              #"Special Dex: Event/Costume",
              "Pokédex: G-Max",
-             "Mega/Primal Evolution Guru"#, "Special Dex: Sum of All Dex Counts"]
+             "Mega/Primal Evolution Guru"#,
+             #"Special Dex: Sum of All Dex Counts"]
+             ]
 N_TYPE_MEDALS = 18
 STATNAME_DEX_SUM = "Sum of All Dex Counts"
 

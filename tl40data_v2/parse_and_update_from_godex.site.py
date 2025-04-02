@@ -15,7 +15,7 @@ from subprocess import run
 # Mapping between the particular dex names I defined for myself at godex.site, to the stat names in stats.json
 mappings = {
         "Event (non-clone, non-size)": ["Pokédex: Event/Costume"],
-        "Go Dex Simple": ["Pokédex: Total", "Unique Species Seen", "Pokédex: Perfect", "Pokédex: 3 Stars", "Pokédex: XXL", "Pokédex: XXS"],
+        "Go Dex Simple": ["Pokédex: Total", "Unique Species Seen", "Pokédex: ★ 100%", "Pokédex: 3 Stars", "Pokédex: XXL", "Pokédex: XXS"],
         "Lucky Simple": ["Pokédex: Lucky"],
         "Mega": ["Mega/Primal Evolution Guru", "Pokédex: Mega"],
         #"National Dex": "",
@@ -35,7 +35,7 @@ mappings = {
         "Unova":   ["Unova"],
         "Kalos":   ["Kalos"],
         "Alola":   ["Alola"],
-        #"Unknown": ["Unknown Generation"],
+        "Unknown": ["Unknown Generation"],
         "Galar":   ["Galar"],
         "Hisui":   ["Hisui"],
         "Paldea":  ["Paldea"],
