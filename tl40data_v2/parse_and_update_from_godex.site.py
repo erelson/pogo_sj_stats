@@ -218,6 +218,9 @@ def main():
     update_stats_json(updates)
     print_current_diff()
     print("\n******All done!******")
+    print("Next steps:")
+    print("1. Make a git commit of changes to stats.json")
+    print("2. Run upload_stat_limits.bash")
 
 
 if __name__ == '__main__':
