@@ -119,7 +119,7 @@ class Editor():
         # self.stats is dict {stat_name : {"value": value}, ...}
         self.stats = Stat.unpack_strdata(survey.strdata, self.session, pad_data=True)
         while True:
-            print("\n(To abort updating values in this survey, give empty response or say 'abort')")
+            print("\n(To abort updating values in this trainer's survey, give empty response or say 'abort')")
             stat_name = prompt_stat(self.stats)
             if not stat_name:
                 break
@@ -188,14 +188,14 @@ def confirm(prompt):
         ans = input(prompt).lower().strip()[0]
     return ans == 'y'
 
-def prompt_confirm_selection(options, vals=None):
+def prompt_confirm_selection(options, vals=None, abort_info=""):
     """
     """
     if vals:
         assert(len(options) == len(vals))
     for idx, x in enumerate(options):
         print(f"{idx + 1}: {x}")
-    print("q: Abort")
+    print("q: Abort" + (f" ({abort_info})" if abort_info else ""))
     sel = -1
     while sel not in range(len(options)):
         sel = input("Enter the number of the desired option: ").strip()
@@ -255,7 +255,7 @@ def main(args):
 def prompt_survey(trainer_surveys):
     values, keys = zip(*trainer_surveys)
     print("\nSelect which survey to work with")
-    sel = prompt_confirm_selection(keys, values)
+    sel = prompt_confirm_selection(keys, values, abort_info="Choose a different trainer")
     return sel
 
 def prompt_stat(stat_data):
@@ -267,7 +267,7 @@ def prompt_stat(stat_data):
     #keys, values = zip(*stat_data)
     inp = None
     while not inp:
-        inp = input("What stat do you want to look at? (q to abort) ").strip()
+        inp = input("What stat do you want to look at? (q to abort/choose another survey or trainer) ").strip()
     if not inp or inp.lower() in ['abort', 'q']:
         return None
     result = process.extract(inp, keys, limit=3)  # List of [key, score]

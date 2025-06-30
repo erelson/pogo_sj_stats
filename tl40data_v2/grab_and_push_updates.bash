@@ -12,13 +12,13 @@ if [ "$EXIT_AFTER_GRAB" = 'true' ]; then
 fi
 
 # Ask if need to edit the database
-echo "Do you need to hand-edit the DB in sqlitebrowser? (y/n)"
+echo "Do you need to correct/edit records in the DB? (y/n)"
 read -r answer
 if [[ "$answer" = "y" ]]; then
     while true; do
         echo "Which method do you want to use?"
-        echo "1: fuzzy lookup with db_editor.py (default) "
-        echo "2: manual lookup with sqlitebrowser"
+        echo "1: fuzzy lookup of responses with db_editor.py"
+        echo "2: manual hand-edit with sqlitebrowser"
         read -r -p "Answer: " user_input 
         case "$user_input" in
             1)
