@@ -17,17 +17,17 @@
     "Trainer Level":
       ["Integer",0,0,0,0,50,true,1,"trainer_level"],
     "Pokédex: Total":
-      ["Integer",0,0,0,0,901,true,1,"pokedex_caught"],
+      ["Integer",0,0,0,0,904,true,1,"pokedex_caught"],
     "Pokédex: Shiny":
-      ["Integer",0,0,0,0,819,true,1,"pokedex_shiny"],
+      ["Integer",0,0,0,0,823,true,1,"pokedex_shiny"],
     "Pokédex: Lucky":
-      ["Integer",0,0,0,0,886,true,1,"pokedex_lucky"],
+      ["Integer",0,0,0,0,888,true,1,"pokedex_lucky"],
     "Pokédex: XXL":
-      ["Integer",0,0,0,0,901,true,1,"pokedex_xxl"],
+      ["Integer",0,0,0,0,904,true,1,"pokedex_xxl"],
     "Pokédex: XXS":
-      ["Integer",0,0,0,0,901,true,1,"pokedex_xxs"],
+      ["Integer",0,0,0,0,904,true,1,"pokedex_xxs"],
     "Pokédex: G-Max":
-      ["Integer",0,0,0,0,10,true,1,"pokedex_gmax"],
+      ["Integer",0,0,0,0,12,true,1,"pokedex_gmax"],
     "Pokédex: Mega":
       ["Integer",0,0,0,0,45,true,1,"pokedex_mega"],
     "Pokédex: Shadow":
@@ -35,17 +35,17 @@
     "Pokédex: Purified":
       ["Integer",0,0,0,0,392,true,1,"pokedex_purified"],
     "Pokédex: ★ 100%":
-      ["Integer",0,0,0,0,901,true,1,"pokedex_4star"],
+      ["Integer",0,0,0,0,904,true,1,"pokedex_4star"],
     "Unique Species Seen":
-      ["Integer",0,0,0,0,901,true,-1,"pokedex_seen"],
+      ["Integer",0,0,0,0,904,true,-1,"pokedex_seen"],
     "Unknown Generation":
       ["Integer",0,0,0,0,2,true,-1,"pokedex_entries_unknown"],
     "Pokédex: 3 Stars":
-      ["Integer",0,0,0,0,901,true,-1,"pokedex_3star"],
+      ["Integer",0,0,0,0,904,true,-1,"pokedex_3star"],
     "Pokédex: Shiny 3 Stars":
-      ["Integer",0,0,0,0,819,true,-1,"pokedex_3star_shiny"],
+      ["Integer",0,0,0,0,823,true,-1,"pokedex_3star_shiny"],
     "Pokédex: Event/Costume":
-      ["Integer",0,0,0,0,257,true,-1,"pokedex_event"],
+      ["Integer",0,0,0,0,264,true,-1,"pokedex_event"],
     "Stardust":
       ["Integer",0,0,0,0,-1,false,0,"pokemon_info_stardust"],
     "Go Battle League - Overall Wins":
@@ -129,11 +129,11 @@
     "Best Buddy":
       ["Integer",1,10,100,200,-1,true,1,"best_buddy"],
     "Kalos":
-      ["Integer",5,25,50,72,68,true,1,"pokedex_entries_gen6"],
+      ["Integer",5,25,50,72,69,true,1,"pokedex_entries_gen6"],
     "Alola":
       ["Integer",5,25,50,86,78,true,1,"pokedex_entries_gen7"],
     "Galar":
-      ["Integer",5,25,50,89,51,true,1,"pokedex_entries_gen8"],
+      ["Integer",5,25,50,89,53,true,1,"pokedex_entries_gen8"],
     "Triathlete":
       ["Integer",1,10,50,100,-1,true,1,"pokestreak"],
     "Rising Star":
