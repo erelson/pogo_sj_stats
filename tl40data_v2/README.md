@@ -72,6 +72,11 @@ Old manual way:
 1. Update report_fields_1.json (tentative)
 1. Pokédex counts: Update dashboard_html_from_db.py
 
+## Modifying order of stats on the survey
+1. Get report of incorrect order, usually.
+1. Compare with notes, and/or git log. (TODO where are my notes on this)
+1. Edit stats.json and re-arrange corresponding lines.
+
 ## Removing a stat from the survey
 As an example: with the new pokédex UI in early 2025, the 3* dexes were removed.
 

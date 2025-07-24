@@ -54,6 +54,8 @@
       ["Integer",0,0,0,0,-1,true,1,"go_battle_league_overall_played"],
     "Go Battle League - Overall Streak":
       ["Integer",0,0,0,0,-1,true,1,"go_battle_league_overall_streak"],
+    "Completed Special/Timed Research":
+      ["Integer",0,0,0,0,-1,true,0,"completed_special_research"],
     "Unique Route Badges":
       ["Integer",0,0,0,0,-1,true,0,"routes_completed"],
     "Gym Badges":
