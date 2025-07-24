@@ -60,7 +60,7 @@ Old manual way:
 1. Pull down the latest DB: ./grab_latest_db.bash
 1. Run ./fill_static_tables.py
 1. Inspect the db e.g. with sqlitebrowser
-1. Upload the updated DB
+1. Upload the updated DB: ./push_db.bash
 1. Run upload_stat_limits.bash
 1. Copy the new icon to static/ folder on server
 1. Check the survey loads correctly (better yet, submit a survey and check things)
