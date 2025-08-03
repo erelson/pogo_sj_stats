@@ -35,26 +35,23 @@ class Stat(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     short_name = Column(String, unique=True)  # or make this the primary key?
-    # Because migrations are more effort, I started just using stats.json for every field below
-    icon = Column(String)  # TODO Unused; stats.json used instead
-    numtype = Column(String)  # TODO Unused; stats.json used instead
-    bronze = Column(Integer)  # TODO Unused; stats.json used instead
-    silver = Column(Integer)  # TODO Unused; stats.json used instead
-    gold = Column(Integer)  # TODO Unused; stats.json used instead
-    platinum = Column(Integer)  # TODO Unused; stats.json used instead
-    maximum = Column(Integer)  # TODO Unused; stats.json used instead
-    required = Column(Boolean)  # TODO Unused; stats.json used instead; also now using signed integers
+    # NOTE Because migrations are more effort, I started just using stats.json for every field below
+    icon = Column(String)  # NOTE Unused; stats.json used instead
+    numtype = Column(String)  # NOTE Unused; stats.json used instead
+    bronze = Column(Integer)  # NOTE Unused; stats.json used instead
+    silver = Column(Integer)  # NOTE Unused; stats.json used instead
+    gold = Column(Integer)  # NOTE Unused; stats.json used instead
+    platinum = Column(Integer)  # NOTE Unused; stats.json used instead
+    maximum = Column(Integer)  # NOTE Unused; stats.json used instead
+    required = Column(Boolean)  # NOTE Unused; stats.json used instead; also now using signed integers
     monotonic = Column(Boolean)  # TODO nullable? what has been stored to-date?
-    order_idx = Column(Integer)  # dictates stat order aka position in response.strdata
+    order_idx = Column(Integer)  # NOTE Unused; dictates stat order aka position in response.strdata
                                  # Note that survey display order is DIFFERENT (it's from stats.json)
 
     def __init__(self, *args, **kwargs):
-        #print("OHHH")
-        #print(kwargs)
         super().__init__(*args, **kwargs)
         if "icon" in kwargs:
             self.icon
-        #print(self.icon)
 
     @classmethod
     def get_all_stat_names(cls, session):
@@ -227,7 +224,6 @@ class Response(Base):
 
         # Put response values in DB's order of Stats.
         # Any unfilled values are set to 0...
-        #key_val_order.sort(key=lambda x: x[2])
         #print(stat_data_dict)
         #print(len(stat_data_dict))
         #print(list(response_values.keys()))
@@ -299,7 +295,6 @@ def main():
     args = parser.parse_args()
 
     db_specifier = LOCAL_DB_SPECIFIER
-    #engine = get_engine(db_specifier)
     engine = create_engine(db_specifier)
 
     # Create the tables

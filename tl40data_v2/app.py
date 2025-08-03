@@ -5,7 +5,9 @@
 # Standard library
 import argparse
 import json
+import os
 import sys
+from datetime import datetime
 
 # Third party
 from flask import request, flash, redirect, url_for, send_from_directory
@@ -80,11 +82,11 @@ def get_survey_data_in_survey_order(session, user=None):
     # For now, load from json. The json is a list in a hand-chosen desired order.
     # This means we can update the order (in the json file), without updating/migrating the database.
     static_stat_info = json.load(open("stats.json", 'r'))  # dict
-    stat_keys = static_stat_info["key"]  # list   TODO probably not using this here...
+    stat_keys = static_stat_info["key"]  # list
     stat_vals = static_stat_info["data"]  # dict keyed by Stat Names
     for cnt, stat_name in enumerate(stat_vals):
         stats_list.append([cnt,  # index to sort by later
-                           Stat(name=stat_name, # order_idx=cnt,  # Probably don't need this order since we're not saving this object to DB...
+                           Stat(name=stat_name,
                                 **dict(zip(stat_keys, stat_vals[stat_name]))),
                            0,  # previous value
                            ])
@@ -111,9 +113,12 @@ def get_survey_data_in_survey_order(session, user=None):
     # Calculate offsets for each stat category
     # For each stat category, iterate through its badge amounts, calculating offsets based on previous stat amount.
     # Use cnt as index in stats_list, generated from stats_vals.
-    for cnt, x in enumerate(stat_vals.values()):  # iterate through the entries loaded from json
+    for cnt, key in enumerate(stat_vals):  # iterate through the entries loaded from json
+        # Note: key is e.g. "Unique Species Caught"
+        x = stat_vals[key]
+        statname = x[7]
         try:
-            # The actual keys are tuples...
+            # The keys for trainer_data are actually tuples...  # TODO 1-2025: reading code, this claim seems wrong
             previousval = trainer_data[(key,)]
             if previousval == '':  # Trying to load a new field that is not in the previous response's strdata
                 previousval = 0
@@ -310,7 +315,18 @@ def stats_previous(month=None):
 def stats_previous_from_static(month=None):
     """month is something like 2022-3"""
     # Should load the previous month's stats
+    # Historically used this one... but noticed it started concatenating like static/static/x in May 2023
+    #return send_from_directory('static', month)
+    # Trying to avoid concatenation:
+    # Note 10-13-2023: this might not be working? Missing static/scroll2.js...
+    #return send_from_directory('/static', month)
+    # 10-13-2023: Trying this again:
     return send_from_directory('static', month)
+    #  this might work better?
+    # Nope
+    #return redirect(f"/{month}")
+    # Nope
+    #return redirect(url_for('stats_previous_from_static', month))
 
 
 @app.route("/")
@@ -401,7 +417,7 @@ def fill_survey(user=None):
             # Submission page
             # <pre> tags preserve the tab characters, so users can paste data into spreadsheets
             html_out = "Thanks for the submission! Stats will be regenerated on the 1st.<p>" \
-                    "But here's the raw data you submitted if you want to back it up for now:<p>" \
+                    "Here's the raw data you submitted if you want to back it up for your own use:<p>" \
                     "<pre>" \
                     + "<br>".join([f"{k}:\t{v}" for k, v in request.values.items()]) \
                     + "</pre>"
@@ -416,6 +432,8 @@ def fill_survey(user=None):
         # Print a helpful warning if there are errors in the survey (i.e. validation failed)
         # otherwise, no-op.
         if request_method == 'POST' and not form_validated:
+            print(form_validated)
+            print(type(form_validated))
             print("THERE WERE INCOMPLETE STATS:")
             piw = print_incomplete_warning
         else:
