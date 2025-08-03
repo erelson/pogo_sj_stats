@@ -11,7 +11,7 @@ LOCAL_DB_SPECIFIER = (LOCAL_DB_SPECIFIER_BASE
                       + os.path.join(LOCAL_DB_DIR, LOCAL_DB_FILENAME)
                       + LOCAL_DB_OPTIONS)
 TEST_USER = "test_user"
-
+PLOT_DIR = LOCAL_DB_DIR
 
 def local_db_specifier_from_file(filepath):
     """Returns a DB specifier to use instead of the default LOCAL_DB_SPECIFIER

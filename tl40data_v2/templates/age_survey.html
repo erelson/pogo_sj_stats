@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Age Survey</title>
+</head>
+<body>
+    <h1>Pokémon Age Survey</h1>
+    <p>What is this?: Filling out the below info about your pokemon storage will generate a couple
+    plots visualizing the distribution of how old your pokemon are.</p>
+    <p>This can be informative and show insights about your <s>hoarding</s> collecting habits.</p>
+    <p>(Note: This data is saved in a database for later multi-trainer visualizations. You can leave the Trainer Name field blank if you wish.)</p>
+    <hr class="rounded">
+    <form method="POST" action="{{ url_for('age_survey') }}">
+        <label for="trainer_name">Trainer Name (Optional):</label>
+        <input type="text" id="trainer_name" name="trainer_name"><br><br>
+
+        <label for="max_storage">Current Pokémon Storage Limit:</label>
+        <input type="number" id="max_storage" name="max_storage" required><br><br>
+
+        <label for="current_pokemon_count">Current Number of Pokémon:</label>
+        <input type="number" id="current_pokemon_count" name="current_pokemon_count" required><br><br>
+
+        <p>You determine the following by searching your pokemon storage for a year, like <tt>year2020</tt></p>
+        {% set now = datetime.utcnow() %}
+        {% for year in range(now.year, 2016 - 1, -1) %}
+        <!--<label for="age_{{ year }}-01-01">Number kept since {{ year }}-01-01 (Search: age-{{ (now - datetime(year, 1, 1)).days }}):</label> -->
+        <label for="age_{{ year }}-01-01">Number of mons from {{ year }} (Search: <tt>year{{year}}</tt>):</label>
+            <input type="number" id="year{{ year }}" name="year{{ year }}" min="0"><br><br>
+        {% endfor %}
+
+        <button type="submit">Submit</button>
+
+        {% if svgplot %}
+        <div id="success-message" style="color: green; font-weight: bold;">
+            {{ svgplot | safe }}
+        </div>
+        {% endif %}
+    </form>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</body>
+</html>
+

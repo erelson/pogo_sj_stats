@@ -16,6 +16,9 @@ from flask import render_template
 from wtforms import Form, BooleanField, DecimalField, StringField, IntegerField, \
                     PasswordField, validators
 from flask_wtf import FlaskForm
+import matplotlib
+matplotlib.use("svg")  # Set the backend to SVG
+import matplotlib.pyplot as plt
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import OperationalError
@@ -24,7 +27,8 @@ from sqlalchemy.engine import ExceptionContext
 
 # Local
 from tables import Stat, Response, Trainer
-from settings import LOCAL_DB_SPECIFIER
+from tables import AgeSurveyTrainer, AgeSurveyResponse
+from settings import LOCAL_DB_SPECIFIER, PLOT_DIR
 
 
 MEDALS = ["No medal", "Bronze", "Silver", "Gold", "Platinum"]
@@ -455,77 +459,196 @@ def fill_survey(user=None):
     return html_out
 
 
-@app.route('/test_survey/', methods=['GET', 'POST'])
-def fill_test_survey():
-    # Generate a stats list, either default order, or order by user's badge levels if known
+#@app.route('/test_survey/', methods=['GET', 'POST'])
+#def fill_test_survey():
+#    # Generate a stats list, either default order, or order by user's badge levels if known
+#    session = Session(engine, autoflush=True)
+#    stats_list = get_survey_data_in_survey_order(session=session, user="test")
+#
+#    PogoForm = survey_gen(stats_list, PogoStatsForm)
+#    try:
+#        form = PogoForm(request.form)
+#        real_function_call = True  # TODO cleanup
+#        # These are debug stuff...
+#        print("")
+#        if hasattr(request, "values"):
+#            print(request.values)
+#    except RuntimeError:  # likely "Working outside of request context"
+#        # Presumably this is because we're testing stuff and request isn't defined.
+#        form = PogoForm()
+#        real_function_call = False  # TODO cleanup
+#
+#    # Prefill trainername field
+#    if user:
+#        form.trainername.data = user
+#    # Button for loading a user's past submission is done in the jinja template + JS
+#
+#    html_out = "placeholder"
+#    print("", file=sys.stderr)
+#    print("DEBUG HERE - got", request.method)
+#    if hasattr(request, "values"):
+#        print(request.values)
+#    if request.method == 'POST' and form.validate():
+#        # If valid
+#            # Display validation success
+#            # Save in DB
+#            # Display save success
+#            # Redirect to user history page
+#        if session:  # is set up
+#            response = Response.save_response(session, response_values=request.values)
+#            print("Raw saved response object:", response)  # TODO delete this? It just prints a python object identifier I think?
+#            session.commit()
+#            session.flush()
+#
+#            # From example
+#            #user = User(form.username.data, form.email.data,
+#            #            form.password.data)
+#            #db_session.add(user)
+#            html_out = "Thanks for the submission! Sorry, this isn't more complete yet.<p>" \
+#                    "But here's the raw data you submitted if you want to back it up for now:<p>" \
+#                    + str(request.values)
+#        else:
+#            print("skipped db_session.add call")
+#        # TODO subsequent HTML or redirect
+#
+#    else:
+#        print("DEBUG HERE - got", request.method)
+#        print("RENDER HERE:")
+#        if request_method == 'POST' and form_validated:
+#            piw = print_incomplete_warning
+#        else:  # GET
+#            piw = lambda: ""
+#
+#        html_out = render_template('survey_template.html', form=form,
+#                                   zip=zip, type=type, print=print,
+#                                   print_incomplete_warning=piw,
+#                                   )
+#
+#    try:
+#        session.close()
+#    except:
+#        pass
+#
+#    return html_out
+
+
+#app = Flask(__name__)
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///your_database.db'  # Update with your database URI
+#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+#db.init_app(app)
+
+@app.route('/age-survey', methods=['GET', 'POST'])
+def age_survey():
     session = Session(engine, autoflush=True)
-    stats_list = get_survey_data_in_survey_order(session=session, user="test")
+    if request.method == 'POST':
+        proper_trainer_name = request.form.get('trainer_name')
+        trainer_name = proper_trainer_name.lower()
+        plot_trainer_name = proper_trainer_name
+        max_storage = request.form.get('max_storage')
+        current_pokemon_count = request.form.get('current_pokemon_count')
 
-    PogoForm = survey_gen(stats_list, PogoStatsForm)
-    try:
-        form = PogoForm(request.form)
-        real_function_call = True  # TODO cleanup
-        # These are debug stuff...
-        print("")
-        if hasattr(request, "values"):
-            print(request.values)
-    except RuntimeError:  # likely "Working outside of request context"
-        # Presumably this is because we're testing stuff and request isn't defined.
-        form = PogoForm()
-        real_function_call = False  # TODO cleanup
+        # Validate input
+        #if not trainer_name or not max_storage.isdigit() or not current_pokemon_count.isdigit():
+        if not max_storage.isdigit() or not current_pokemon_count.isdigit():
+            flash('Please provide valid inputs.')
+            return redirect(url_for('age_survey'))
 
-    # Prefill trainername field
-    if user:
-        form.trainername.data = user
-    # Button for loading a user's past submission is done in the jinja template + JS
-
-    html_out = "placeholder"
-    print("", file=sys.stderr)
-    print("DEBUG HERE - got", request.method)
-    if hasattr(request, "values"):
-        print(request.values)
-    if request.method == 'POST' and form.validate():
-        # If valid
-            # Display validation success
-            # Save in DB
-            # Display save success
-            # Redirect to user history page
-        if session:  # is set up
-            response = Response.save_response(session, response_values=request.values)
-            print("Raw saved response object:", response)  # TODO delete this? It just prints a python object identifier I think?
+        # Retrieve or create trainer
+        if not trainer_name:
+            plot_trainer_name = None
+            proper_trainer_name = "Anonymous"
+            trainer_name = "anonymous"
+        trainer = session.query(AgeSurveyTrainer).filter_by(name=trainer_name).first()
+        if not trainer:
+            trainer = AgeSurveyTrainer(name=trainer_name, proper_name=proper_trainer_name)
+            session.add(trainer)
             session.commit()
-            session.flush()
 
-            # From example
-            #user = User(form.username.data, form.email.data,
-            #            form.password.data)
-            #db_session.add(user)
-            html_out = "Thanks for the submission! Sorry, this isn't more complete yet.<p>" \
-                    "But here's the raw data you submitted if you want to back it up for now:<p>" \
-                    + str(request.values)
-        else:
-            print("skipped db_session.add call")
-        # TODO subsequent HTML or redirect
+        # Collect age data
+        age_data_entries = []
+        per_year_sum = 0
+        for key, value in request.form.items():
+            if key.startswith('year') and value.isdigit():
+                #date_str = key.split('_', 1)[1]  # Extract date part from the key
+                year_str = key[4:]  # Extract year value from the key
+                age_data_entries.append(f'{year_str},{value}')
+                per_year_sum += int(value)
 
-    else:
-        print("DEBUG HERE - got", request.method)
-        print("RENDER HERE:")
-        if request_method == 'POST' and form_validated:
-            piw = print_incomplete_warning
-        else:  # GET
-            piw = lambda: ""
+        age_data_str = '\n'.join(age_data_entries)
+        # TODO could do validation of sum of per-year values
 
-        html_out = render_template('survey_template.html', form=form,
-                                   zip=zip, type=type, print=print,
-                                   print_incomplete_warning=piw,
-                                   )
+        # Create and save survey response
+        response = AgeSurveyResponse(
+            trainer_id=trainer.id,
+            timestamp = str(datetime.now().timestamp()),
+            max_storage=int(max_storage),
+            current_pokemon_count=int(current_pokemon_count),
+            age_data=age_data_str
+        )
+        session.add(response)
+        session.commit()
+        session.flush()
 
-    try:
-        session.close()
-    except:
-        pass
+        flash('Survey submitted successfully!')
+        #return redirect(url_for('age_survey'))
+        #return render_template('age_survey.html', datetime=datetime, svgplot="test_plot.svg")
+        plot_data(int(max_storage), int(current_pokemon_count), age_data_str, plot_trainer_name)
+        plotfile = os.path.join(PLOT_DIR, "single_survey_plot.svg")
+        with open(plotfile, 'r') as fr:
+            svgtext = fr.read()
+        return render_template('age_survey.html', datetime=datetime, svgplot=svgtext)
 
-    return html_out
+
+    # For reference:
+    #        html_out = render_template('survey_template.html', form=form,
+    #                                   zip=zip, type=type, print=print,
+    #                                   print_incomplete_warning=piw,
+    #                                   )
+    # For GET request, render the survey form
+    return render_template('age_survey.html', datetime=datetime)
+
+
+def plot_data(max_storage, current_pokemon_count, age_data_str, trainer=None):
+    # TODO make use of current_pokemon_count
+    # Create the plot
+    prev_mons = current_pokemon_count
+    mons = []
+    data = []
+    currdate = datetime.now().date()
+    print("uhhh")
+    print(age_data_str)
+    dates = []
+    for line in age_data_str.splitlines():
+        a,b = line.split(",")
+        delta = int(currdate.year) - int(a)
+        dates.append(delta)
+        data.append(int(b))
+        #mons.append(max_storage - int(b))
+        mons.append(prev_mons)# - int(b))
+        prev_mons -= int(b)
+
+    # Create the plot
+    fig, axen = plt.subplots(2)
+    ax1, ax2 = axen
+    ax1.plot(dates, mons, label=f"Pokémon age distribution{' for ' + trainer if trainer else ''}", marker='o')
+    ax1.plot(*zip(*[(d, max_storage) for d in dates]), label=None)
+    #ax1.set_xlabel("Age > X years")
+    ax1.set_ylabel("Cumulative # of mons\nolder than X years")
+    ax1.set_title("Pokémon age distribution")
+    ax1.grid(True)
+    #ax1.legend()
+    ax2.plot(dates, data, label="Pokemon age distribution", marker='o')
+    ax2.set_xlabel("Age (years)")
+    ax2.set_ylabel("# of mons about X\nyears old")
+    #ax2.set_title("Pokemon age distribution")
+    ax2.grid(True)
+    plt.ylim(ymin=0)
+
+    # Save the figure as an SVG file
+    plotfile = os.path.join(PLOT_DIR, "single_survey_plot.svg")
+    fig.savefig(plotfile, format="svg")
+
+    print(f"SVG plot saved as '{plotfile}'")
 
 
 if __name__ == '__main__':

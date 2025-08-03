@@ -27,6 +27,31 @@ Base = declarative_base()
 #    # One to many table of responses for a trainer
 
 
+class AgeSurveyTrainer(Base):
+    __tablename__ = 'age_survey_trainers'
+    id = Column(Integer, primary_key=True)
+    # TODO why string length?
+    # Oh I'm doing something different
+    name = Column(String(100), unique=True, nullable=False)
+    proper_name = Column(String)#, unique=True)
+
+
+class AgeSurveyResponse(Base):
+    __tablename__ = "age_survey_responses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    trainer_id = Column(Integer, ForeignKey("age_survey_trainers.id"), nullable=False)
+    #submission_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    timestamp = Column(String)  # timestamp, often converted to datetime or date object
+    max_storage = Column(Integer, nullable=False)
+    current_pokemon_count = Column(Integer, nullable=False)
+    # Since we're using sqlite3, which doesn't support ARRAY, encode our list of numbers as a comma delimited list.
+    # The save result function will handle a list of tuples of (key,value) and put them in the
+    # correct order (per the Stat table), and store the appropriate strdata=[value1,value2,...]
+    #strdata = Column(String)
+    #age_data = Column(String, nullable=False)  # Format: 'YYYY-MM-DD,###;YYYY-MM-DD,###;...'
+    age_data = Column(String, nullable=False)  # Format: 'YYYY,###;YYYY,###;...'
+
 
 
 class Stat(Base):
