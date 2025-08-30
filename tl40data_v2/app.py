@@ -5,12 +5,11 @@
 # Standard library
 import argparse
 import json
-import os
 import sys
 from datetime import datetime
 
 # Third party
-from flask import request, flash, redirect, url_for, send_from_directory
+from flask import request, flash, redirect, url_for, send_from_directory, jsonify
 from flask import Flask
 from flask import render_template
 from wtforms import Form, BooleanField, DecimalField, StringField, IntegerField, \
@@ -457,6 +456,158 @@ def fill_survey(user=None):
         pass
 
     return html_out
+
+
+@app.route('/visualization')
+def trainer_visualization():
+    """Display the trainer visualization page"""
+    session = Session(engine, autoflush=True)
+    try:
+        # Get all trainers
+        trainers = session.query(Trainer.name).distinct().order_by(Trainer.name).all()
+        trainer_names = [t.name for t in trainers]
+
+        # Load stats from JSON and extract categories
+        with open('stats.json', 'r') as f:
+            stats_data = json.load(f)
+
+        # Parse stats with categories
+        stats = []
+        categories = set()
+        for stat_name, stat_info in stats_data['data'].items():
+            # Get category (last item in the array)
+            if len(stat_info) >= 10:  # has category field
+                category = stat_info[9]
+            else:
+                category = "General"  # fallback
+
+            categories.add(category)
+            stats.append({
+                'name': stat_name,
+                'icon': stat_info[8],  # icon field
+                'category': category
+            })
+
+        return render_template('trainer_visualization.html',
+                             trainers=trainer_names,
+                             stats=stats,
+                             categories=sorted(categories))
+    finally:
+        session.close()
+
+
+@app.route('/api/trainer-stats', methods=['POST'])
+def get_trainer_stats():
+    """API endpoint to fetch trainer statistics data"""
+    session = Session(engine, autoflush=True)
+    try:
+        data = request.get_json()
+        trainer_name = data['trainer_name']
+        stat_names = data['stat_names']
+        start_date = data['start_date']
+        end_date = data['end_date']
+        view_type = data.get('view_type', 'absolute')
+
+        # Find the trainer
+        try:
+            trainer = session.query(Trainer).filter_by(name=trainer_name.lower()).one()
+        except NoResultFound:
+            return jsonify({'error': 'Trainer not found'}), 404
+
+        # Convert date strings to timestamps for comparison
+        start_timestamp = datetime.strptime(start_date, '%Y-%m-%d').timestamp()
+        end_timestamp = datetime.strptime(end_date + ' 23:59:59', '%Y-%m-%d %H:%M:%S').timestamp()
+
+        # Get all responses for this trainer in the date range
+        responses = session.query(Response).filter(
+            Response.trainer_id == trainer.id,
+            Response.timestamp >= str(start_timestamp),
+            Response.timestamp <= str(end_timestamp)
+        ).order_by(Response.timestamp).all()
+
+        if not responses:
+            return jsonify({'error': 'No data found for the selected date range'}), 404
+
+        if len(responses) < 2 and view_type in ['increments', 'rate']:
+            return jsonify({'error': 'At least 2 data points required for incremental/rate views'}), 400
+
+        # Get stat names in database order to parse strdata
+        stat_names_ordered = [s[0] for s in session.query(Stat.name).order_by(Stat.order_idx).all()]
+
+        # Group responses by month and extract requested stats
+        monthly_data = {}
+
+        for response in responses:
+            # Convert timestamp to datetime and extract year-month
+            response_dt = datetime.fromtimestamp(float(response.timestamp))
+            month_key = response_dt.strftime('%Y-%m')
+
+            # Parse strdata to get individual stat values
+            stat_values = response.strdata.split(';')
+            stat_dict = dict(zip(stat_names_ordered, stat_values))
+
+            # Store the latest response for each month (in case multiple submissions per month)
+            if month_key not in monthly_data or response.timestamp > monthly_data[month_key]['timestamp']:
+                monthly_data[month_key] = {
+                    'timestamp': response.timestamp,
+                    'stats': stat_dict
+                }
+
+        # Build results for each requested stat
+        results = []
+        for stat_name in stat_names:
+            if stat_name not in stat_names_ordered:
+                continue
+
+            data_points = []
+            prev_value = None
+
+            # Sort months chronologically
+            for month in sorted(monthly_data.keys()):
+                try:
+                    value = float(monthly_data[month]['stats'][stat_name])
+                except (ValueError, KeyError):
+                    value = 0
+
+                if view_type == 'increments':
+                    if prev_value is not None:
+                        # Monthly change - skip first data point
+                        data_points.append([month, value - prev_value])
+                elif view_type == 'rate':
+                    if prev_value is not None and prev_value > 0:
+                        # Growth rate percentage - skip first data point
+                        rate = ((value - prev_value) / prev_value) * 100
+                        data_points.append([month, rate])
+                else:
+                    # Absolute values (always include all data points)
+                    data_points.append([month, value])
+
+                prev_value = value
+
+            if data_points:
+                results.append({
+                    'stat_name': stat_name,
+                    'data_points': data_points,
+                    'trainer_name': trainer_name
+                })
+
+        if len(results) == 1:
+            # Single stat response
+            return jsonify(results[0])
+        else:
+            # Multiple stats response
+            return jsonify({
+                'trainer_name': trainer_name,
+                'stats': results
+            })
+
+    except Exception as e:
+        print(f"Error in get_trainer_stats: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
 
 
 #@app.route('/test_survey/', methods=['GET', 'POST'])
