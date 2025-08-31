@@ -88,9 +88,13 @@ def get_survey_data_in_survey_order(session, user=None):
     stat_keys = static_stat_info["key"]  # list
     stat_vals = static_stat_info["data"]  # dict keyed by Stat Names
     for cnt, stat_name in enumerate(stat_vals):
+        # Create stat data dict but exclude 'category' field since it's not in the Stat model
+        stat_data = dict(zip(stat_keys, stat_vals[stat_name]))
+        if 'category' in stat_data:
+            del stat_data['category']
+
         stats_list.append([cnt,  # index to sort by later
-                           Stat(name=stat_name,
-                                **dict(zip(stat_keys, stat_vals[stat_name]))),
+                           Stat(name=stat_name, **stat_data),
                            0,  # previous value
                            ])
 
