@@ -123,6 +123,19 @@
         .clear-btn:hover {
             background: #c9302c;
         }
+        .share-btn {
+            background: #5bc0de;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        .share-btn:hover {
+            background: #46b8da;
+        }
     </style>
 </head>
 <body>
@@ -201,6 +214,9 @@
                     <button type="submit" class="submit-btn" id="submit-btn" disabled>
                         Generate Chart
                     </button>
+                    <button type="button" class="share-btn" id="share-btn" style="display: none;">
+                        Share Link
+                    </button>
                 </div>
             </div>
         </form>
@@ -228,12 +244,84 @@
         const categoryFilter = document.getElementById('category-filter');
         const statSearch = document.getElementById('stat-search');
         const clearButton = document.getElementById('clear-selections');
+        const shareButton = document.getElementById('share-btn');
 
-        // Set default dates (last year)
-        const today = new Date();
-        const lastYear = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-        document.getElementById('end-date').value = today.toISOString().split('T')[0];
-        document.getElementById('start-date').value = lastYear.toISOString().split('T')[0];
+        // Load state from URL parameters on page load
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            
+            // Load trainer
+            const trainer = params.get('trainer');
+            if (trainer) {
+                document.getElementById('trainer-select').value = trainer;
+            }
+            
+            // Load date range
+            const startDate = params.get('start');
+            const endDate = params.get('end');
+            if (startDate) {
+                document.getElementById('start-date').value = startDate;
+            }
+            if (endDate) {
+                document.getElementById('end-date').value = endDate;
+            }
+            
+            // Load view type
+            const viewType = params.get('view');
+            if (viewType) {
+                const viewRadio = document.querySelector(`input[name="view-type"][value="${viewType}"]`);
+                if (viewRadio) {
+                    viewRadio.checked = true;
+                }
+            }
+            
+            // Load selected stats
+            const statsParam = params.get('stats');
+            if (statsParam) {
+                const statNames = statsParam.split(',').map(s => decodeURIComponent(s));
+                const checkboxes = document.querySelectorAll('input[name="stats"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = statNames.includes(checkbox.value);
+                });
+            }
+            
+            // If URL has parameters, auto-submit the form
+            if (trainer && statsParam) {
+                // Small delay to ensure form is fully loaded
+                setTimeout(() => {
+                    validateForm();
+                    if (!submitBtn.disabled) {
+                        form.dispatchEvent(new Event('submit'));
+                    }
+                }, 100);
+            }
+        }
+
+        // Set default dates (last year) if not loaded from URL
+        function setDefaultDates() {
+            const today = new Date();
+            const lastYear = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+            
+            if (!document.getElementById('end-date').value) {
+                document.getElementById('end-date').value = today.toISOString().split('T')[0];
+            }
+            if (!document.getElementById('start-date').value) {
+                document.getElementById('start-date').value = lastYear.toISOString().split('T')[0];
+            }
+        }
+
+        // Update URL with current form state
+        function updateURL(payload) {
+            const params = new URLSearchParams();
+            params.set('trainer', payload.trainer_name);
+            params.set('stats', payload.stat_names.map(s => encodeURIComponent(s)).join(','));
+            params.set('start', payload.start_date);
+            params.set('end', payload.end_date);
+            params.set('view', payload.view_type);
+            
+            const newURL = `${window.location.pathname}?${params.toString()}`;
+            window.history.pushState(null, '', newURL);
+        }
 
         // Validate form and enable/disable submit button
         function validateForm() {
@@ -270,6 +358,58 @@
             validateForm();
         }
 
+        // Copy share link to clipboard
+        function shareCurrentView() {
+            const currentURL = window.location.href;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(currentURL).then(() => {
+                    // Temporarily change button text to show success
+                    const originalText = shareButton.textContent;
+                    shareButton.textContent = 'Link Copied!';
+                    shareButton.style.background = '#5cb85c';
+                    
+                    setTimeout(() => {
+                        shareButton.textContent = originalText;
+                        shareButton.style.background = '#5bc0de';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy URL:', err);
+                    fallbackCopyToClipboard(currentURL);
+                });
+            } else {
+                // Fallback for older browsers or non-HTTPS
+                fallbackCopyToClipboard(currentURL);
+            }
+        }
+
+        // Fallback clipboard method
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                shareButton.textContent = 'Link Copied!';
+                shareButton.style.background = '#5cb85c';
+                
+                setTimeout(() => {
+                    shareButton.textContent = 'Share Link';
+                    shareButton.style.background = '#5bc0de';
+                }, 2000);
+            } catch (err) {
+                alert('Could not copy link. Please copy the URL manually from your address bar.');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
         // Event listeners
         document.getElementById('trainer-select').addEventListener('change', validateForm);
         document.getElementById('start-date').addEventListener('change', validateForm);
@@ -279,6 +419,7 @@
         categoryFilter.addEventListener('change', filterStats);
         statSearch.addEventListener('input', filterStats);
         clearButton.addEventListener('click', clearAllSelections);
+        shareButton.addEventListener('click', shareCurrentView);
 
         // Form submission
         form.addEventListener('submit', async function(e) {
@@ -307,7 +448,14 @@
                 if (responseCache.has(cacheKey)) {
                     console.log('Using cached data');
                     const cachedData = responseCache.get(cacheKey);
+                    
+                    // Update URL even for cached data
+                    updateURL(payload);
+                    
                     renderChart(cachedData);
+                    
+                    // Show share button for cached data too
+                    shareButton.style.display = 'inline-block';
                     return;
                 }
                 
@@ -343,7 +491,13 @@
                 responseCache.set(cacheKey, data);
                 console.log('Cached new response');
                 
+                // Update URL with current selection
+                updateURL(payload);
+                
                 renderChart(data);
+                
+                // Show share button after successful chart generation
+                shareButton.style.display = 'inline-block';
                 
             } catch (error) {
                 if (error.name === 'AbortError') {
@@ -509,7 +663,9 @@
             }
         }
 
-        // Initialize form validation
+        // Initialize page
+        loadFromURL();
+        setDefaultDates();
         validateForm();
     </script>
 </body>
