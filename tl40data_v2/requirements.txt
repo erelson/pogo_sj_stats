@@ -1,7 +1,7 @@
 dominate
 flask
 flask_wtf
-fuzzywuzzy
+thefuzz
 sqlalchemy
 sqlitebrowser
 toml

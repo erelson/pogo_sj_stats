@@ -28,7 +28,7 @@ from argparse import ArgumentParser
 import datetime
 
 # Third party
-from fuzzywuzzy import process
+from thefuzz import process
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm.exc import NoResultFound, UnmappedInstanceError
