@@ -16,7 +16,7 @@
     "Total XP":
       ["Integer",0,0,0,0,-1,true,1,"total_xp","General"],
     "Trainer Level":
-      ["Integer",0,0,0,0,50,true,1,"trainer_level","General"],
+      ["Integer",0,0,0,0,80,true,1,"trainer_level","General"],
     "Pokédex: Total":
       ["Integer",0,0,0,0,917,true,1,"pokedex_caught","Pokédex"],
     "Pokédex: Shiny":
