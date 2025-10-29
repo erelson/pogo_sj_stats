@@ -18,35 +18,35 @@
     "Trainer Level":
       ["Integer",0,0,0,0,80,true,1,"trainer_level","General"],
     "Pokédex: Total":
-      ["Integer",0,0,0,0,917,true,1,"pokedex_caught","Pokédex"],
+      ["Integer",0,0,0,0,921,true,1,"pokedex_caught","Pok\u00e9dex"],
     "Pokédex: Shiny":
-      ["Integer",0,0,0,0,840,true,1,"pokedex_shiny","Pokédex"],
+      ["Integer",0,0,0,0,843,true,1,"pokedex_shiny","Pok\u00e9dex"],
     "Pokédex: Lucky":
-      ["Integer",0,0,0,0,900,true,1,"pokedex_lucky","Pokédex"],
+      ["Integer",0,0,0,0,904,true,1,"pokedex_lucky","Pok\u00e9dex"],
     "Pokédex: XXL":
-      ["Integer",0,0,0,0,917,true,1,"pokedex_xxl","Pokédex"],
+      ["Integer",0,0,0,0,921,true,1,"pokedex_xxl","Pok\u00e9dex"],
     "Pokédex: XXS":
-      ["Integer",0,0,0,0,917,true,1,"pokedex_xxs","Pokédex"],
+      ["Integer",0,0,0,0,921,true,1,"pokedex_xxs","Pok\u00e9dex"],
     "Pokédex: G-Max":
-      ["Integer",0,0,0,0,13,true,1,"pokedex_gmax","Pokédex"],
+      ["Integer",0,0,0,0,13,true,1,"pokedex_gmax","Pok\u00e9dex"],
     "Pokédex: Mega":
-      ["Integer",0,0,0,0,47,true,1,"pokedex_mega","Pokédex"],
+      ["Integer",0,0,0,0,48,true,1,"pokedex_mega","Pok\u00e9dex"],
     "Pokédex: Shadow":
-      ["Integer",0,0,0,0,415,true,1,"pokedex_shadow","Pokédex"],
+      ["Integer",0,0,0,0,419,true,1,"pokedex_shadow","Pok\u00e9dex"],
     "Pokédex: Purified":
-      ["Integer",0,0,0,0,415,true,1,"pokedex_purified","Pokédex"],
+      ["Integer",0,0,0,0,419,true,1,"pokedex_purified","Pok\u00e9dex"],
     "Pokédex: ★ 100%":
-      ["Integer",0,0,0,0,917,true,1,"pokedex_4star","Pokédex"],
+      ["Integer",0,0,0,0,921,true,1,"pokedex_4star","Pok\u00e9dex"],
     "Unique Species Seen":
-      ["Integer",0,0,0,0,917,true,-1,"pokedex_seen","Pokédex"],
+      ["Integer",0,0,0,0,921,true,-1,"pokedex_seen","Pok\u00e9dex"],
     "Unknown Generation":
-      ["Integer",0,0,0,0,2,true,-1,"pokedex_entries_unknown","Pokédex"],
+      ["Integer",0,0,0,0,2,true,-1,"pokedex_entries_unknown","Pok\u00e9dex"],
     "Pokédex: 3 Stars":
-      ["Integer",0,0,0,0,917,true,-1,"pokedex_3star","Pokédex"],
+      ["Integer",0,0,0,0,921,true,-1,"pokedex_3star","Pok\u00e9dex"],
     "Pokédex: Shiny 3 Stars":
-      ["Integer",0,0,0,0,840,true,-1,"pokedex_3star_shiny","Pokédex"],
+      ["Integer",0,0,0,0,843,true,-1,"pokedex_3star_shiny","Pok\u00e9dex"],
     "Pokédex: Event/Costume":
-      ["Integer",0,0,0,0,270,true,-1,"pokedex_event","Pokédex"],
+      ["Integer",0,0,0,0,275,true,-1,"pokedex_event","Pok\u00e9dex"],
     "Stardust":
       ["Integer",0,0,0,0,-1,false,0,"pokemon_info_stardust","General"],
     "Go Battle League - Overall Wins":
@@ -150,7 +150,7 @@
     "Successor":
       ["Integer",1,50,500,1000,-1,true,1,"mega_evolves","Medal"],
     "Mega/Primal Evolution Guru":
-      ["Integer",1,24,36,46,47,true,1,"pokedex_entries_mega_dex","Medal"],
+      ["Integer",1,24,36,46,48,true,1,"pokedex_entries_mega_dex","Medal"],
     "Friend Finder":
       ["Integer",1,10,20,50,-1,true,0,"referral","Social"],
     "Raid Expert":
@@ -158,7 +158,7 @@
     "Expert Navigator":
       ["Integer",10,50,200,600,-1,true,0,"routes_trips","Exploration"],
     "Paldea":
-      ["Integer",5,30,80,103,55,true,1,"pokedex_entries_gen10","Regional"],
+      ["Integer",5,30,80,103,59,true,1,"pokedex_entries_gen10","Regional"],
     "Hisui":
       ["Integer",1,3,5,7,6,true,1,"pokedex_entries_gen9","Regional"],
     "Tiny Pokémon Collector":
