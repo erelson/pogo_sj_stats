@@ -379,6 +379,12 @@ def fill_survey(user=None):
     session = Session(engine, autoflush=True)
     stats_list = get_survey_data_in_survey_order(session=session, user=user)
 
+    # Load help text for stats
+    try:
+        stat_help = json.load(open("stat_help.json", 'r'))
+    except FileNotFoundError:
+        stat_help = {}
+
     PogoForm = survey_gen(stats_list, PogoStatsForm)
     try:
         form = PogoForm(request.form)
@@ -450,6 +456,7 @@ def fill_survey(user=None):
             html_out = render_template('survey_template.html', form=form,
                                        zip=zip, type=type, print=print,
                                        print_incomplete_warning=piw,
+                                       stat_help=stat_help,
                                        )
         except RuntimeError:
             pass

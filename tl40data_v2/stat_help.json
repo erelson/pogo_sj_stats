@@ -1,0 +1,9 @@
+{
+  "Jogger": "This is Optional. If you use a phone rocker, you should probalby leave this blank ;)",
+  "Completed Special/Timed Research": "This can be found at the bottom of the special research pane",
+  "Vivillon Collector": "This medal's location varies by user: it is the last of the medals of the same level (gold, silver, etc).",
+  "Unique Route Badges": "This is the number of 'Followed' routes seen after tapping LIST under ROUTE BADGES",
+  "Schoolkid": "Type medals are OPTIONAL",
+   "Gym Badges": "Count the total number of gym badges earned. This includes all bronze, silver, and gold badges from gyms you've interacted with. The easiest way to do this is tap LIST under GYM BADGES, then tap the Map icon in the bottom left and add up the gyms shown while fully zoomed out. Yep, math.",
+  "Gold Gym Badges": "This requires manually counting. Many folks track this in a spreadsheet, or save screenshots of each new gold gym and record the number. Because the game only keeps 2000 gyms viewable, older gold gyms you have obtained can 'fall off' of the list of gyms."
+}

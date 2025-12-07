@@ -17,7 +17,14 @@
         <hr class="rounded">
       {% endif %}
 
-      <li><img src="../{{ i }}.png" style="width:50px;height:50px;">{{ render_field(form.__getattribute__(i)) }}</li>
+      <li>
+        <img src="../{{ i }}.png" style="width:50px;height:50px;">
+        {% set stat_name = form.__getattribute__(i).label.text %}
+        {% if stat_name in stat_help %}
+          <span style="cursor: help; font-weight: bold; color: #0066cc;" title="{{ stat_help[stat_name] }}">ⓘ</span>
+        {% endif %}
+        {{ render_field(form.__getattribute__(i)) }}
+      </li>
 
     {%endfor%}
   </dl>
