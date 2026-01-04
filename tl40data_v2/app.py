@@ -88,14 +88,19 @@ def get_survey_data_in_survey_order(session, user=None):
     stat_keys = static_stat_info["key"]  # list
     stat_vals = static_stat_info["data"]  # dict keyed by Stat Names
     for cnt, stat_name in enumerate(stat_vals):
-        # Create stat data dict but exclude 'category' field since it's not in the Stat model
+        # Create stat data dict but exclude 'category' and 'warning_factor' fields since they're not in the Stat model
         stat_data = dict(zip(stat_keys, stat_vals[stat_name]))
+        # Preserve warning_factor for later use in JavaScript
+        warning_factor = stat_data.get('warning_factor', 0)
         if 'category' in stat_data:
             del stat_data['category']
+        if 'warning_factor' in stat_data:
+            del stat_data['warning_factor']
 
         stats_list.append([cnt,  # index to sort by later
                            Stat(name=stat_name, **stat_data),
                            0,  # previous value
+                           warning_factor,  # warning factor for validation
                            ])
 
     # Get trainer's last survey data if any, to help set order, limits and hints on the survey page.
@@ -226,7 +231,7 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
     # See also shenanigans around line 150 above.
     sections = [20, 100, 200, 300, 400, 500, 600, 700, 800, 900, 10000]
     section_idx = 0
-    for order, stat, previous_val_str in stats_list:  # in order already
+    for order, stat, previous_val_str, warning_factor in stats_list:  # in order already
         # required == -1 stats are no longer collected
         if stat.required == -1:
             continue
@@ -272,6 +277,7 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
                                  render_kw={"inputmode": "numeric", "type": "number",
                                             "placeholder": previous_val_str,
                                             "previous_val_with_badge": previous_val_str,  # unused
+                                            "data-warning-factor": warning_factor,
                                             },
                                  )
         else:
@@ -280,6 +286,7 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
                                  render_kw={"inputmode": "numeric", "type": "number",
                                             "placeholder": previous_val_str,
                                             "previous_val_with_badge": previous_val_str,  # unused
+                                            "data-warning-factor": warning_factor,
                                             },
                                  )
         # Set the field object on our form, which will later generate the HTML
