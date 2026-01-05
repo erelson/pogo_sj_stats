@@ -59,5 +59,108 @@
         window.location.href = window.location.origin + "/survey/" + firstBox.value;
     });
   </script>
+
+  <script>
+    // Warning validation for unusually high stat values
+
+    function checkForWarnings() {
+        const warnings = [];
+        const inputs = document.querySelectorAll('input[type="number"]');
+
+        inputs.forEach(input => {
+            // Skip the trainername field and empty fields
+            if (input.id === 'trainername' || !input.value) {
+                return;
+            }
+
+            const warningFactor = parseFloat(input.dataset.warningFactor);
+
+            // Skip if warning_factor is 0 or not set (disabled)
+            if (!warningFactor || warningFactor === 0) {
+                return;
+            }
+
+            const currentValue = parseFloat(input.value);
+
+            // Get previous value from placeholder (format: "1234" or "1234 (Gold)")
+            const placeholderText = input.placeholder;
+            if (!placeholderText) {
+                return;
+            }
+
+            const previousValue = parseFloat(placeholderText.split(' ')[0]);
+
+            // Check if current value exceeds warning threshold
+            if (previousValue > 0 && currentValue > previousValue * warningFactor) {
+                // Get the stat name from the label
+                const label = input.parentElement.parentElement.querySelector('dt');
+                const statName = label ? label.textContent.split('(')[0].trim() : input.name;
+
+                const increase = currentValue - previousValue;
+                const percentIncrease = ((increase / previousValue) * 100).toFixed(1);
+
+                warnings.push({
+                    statName: statName,
+                    previousValue: previousValue,
+                    currentValue: currentValue,
+                    increase: increase,
+                    percentIncrease: percentIncrease
+                });
+            }
+        });
+
+        return warnings;
+    }
+
+    function showWarningDialog(warnings) {
+        // Build plain text message for confirm dialog
+        const count = warnings.length;
+        const statWord = count === 1 ? "stat seems" : "stats seem";
+        let message = "⚠️ WARNING: The following " + count + " " + statWord + " unusually high:\n\n";
+        message += "Click OK to submit anyway\nClick Cancel to go back and edit\n\n";
+
+        warnings.forEach(w => {
+            message += w.statName + "\n";
+            message += "  Previous: " + w.previousValue + "\n";
+            message += "  Entered:  " + w.currentValue + "\n";
+            message += "  Increase: +" + w.increase + " (+" + w.percentIncrease + "%)\n\n";
+        });
+
+        return confirm(message);
+    }
+
+    // Intercept form submission to check for warnings
+    const surveyForm = document.querySelector('form');
+
+    surveyForm.addEventListener('submit', function(event) {
+        // Skip warning check if this is the "Load trainer data" button
+        if (event.submitter && event.submitter.id === 'load_data_btn') {
+            return;
+        }
+
+        // Skip warning check if user already confirmed
+        if (this.dataset.warningsConfirmed === 'true') {
+            return;
+        }
+
+        // Check for warnings
+        const warnings = checkForWarnings();
+
+        if (warnings.length > 0) {
+            // Prevent submission
+            event.preventDefault();
+
+            // Show warning dialog
+            const userConfirmed = showWarningDialog(warnings);
+
+            if (userConfirmed) {
+                // User clicked OK - mark as confirmed and resubmit
+                this.dataset.warningsConfirmed = 'true';
+                this.submit();
+            }
+            // Otherwise user clicked Cancel - stay on form to edit
+        }
+    });
+  </script>
   </body>
 </html>
