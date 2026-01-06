@@ -3,6 +3,7 @@
 # Standard library
 from argparse import ArgumentParser
 import datetime
+import sys
 
 # Third party
 import sqlalchemy
@@ -155,6 +156,7 @@ class Trainer(Base):
     start_date = Column(String, nullable=True)
     # 2-26: implementing One to Many, bidirectionally
     responses = relationship("Response", back_populates="trainer")  # Unsure about the back_populates; came from copilot
+    stat_metrics = relationship("TrainerStatMetrics", back_populates="trainer")
     # This buggy line probably came from copilot
     #newest_response = Column("Response", ForeignKey('response.id'), nullable=True)
     #newest_response = Column(Response, nullable=True)  # Can't use a table class as a type
@@ -183,6 +185,129 @@ class Trainer(Base):
         response_values = response.strdata.split(";")
         response_dict = dict(zip(Stat.get_all_stat_names(session), response_values))
         return response_dict
+
+
+class TrainerStatMetrics(Base):
+    """Stores calculated metrics for each trainer's stats to enable personalized validation warnings"""
+    __tablename__ = 'trainer_stat_metrics'
+
+    ## Schema - Composite primary key
+    trainer_id = Column(Integer, ForeignKey('trainer.id'), primary_key=True)
+    stat_name = Column(String, primary_key=True)
+
+    ## Core metrics for anomaly detection
+    average_monthly_increment = Column(sqlalchemy.Float)
+    std_deviation = Column(sqlalchemy.Float, nullable=True)
+
+    # Pre-calculated warning threshold (avg + 2*std)
+    # Will be multiplied by warning_factor from stats.json in JavaScript
+    warning_threshold = Column(sqlalchemy.Float, nullable=True)
+
+    ## Metadata
+    first_response_date = Column(String, nullable=True)
+    last_response_date = Column(String, nullable=True)
+    last_calculated = Column(String)  # timestamp of last calculation
+
+    ## Relationships
+    trainer = relationship("Trainer", back_populates="stat_metrics")
+
+    @classmethod
+    def update_metrics_for_trainer(cls, session, trainer):
+        """Recalculate average increments for all stats for this trainer
+
+        Uses a sliding window of the last 10 responses to keep metrics current
+        and relevant to recent play patterns.
+
+        Args:
+            session: SQLAlchemy session
+            trainer: Trainer object
+        """
+        # Get all responses for this trainer, ordered by time
+        all_responses = session.query(Response)\
+            .filter(Response.trainer_id == trainer.id)\
+            .order_by(Response.timestamp)\
+            .all()
+
+        # Decision: Need at least 3 responses to calculate increments
+        if len(all_responses) < 2:
+            print(f"Skipping metrics update for {trainer.name}: only {len(all_responses)} response(s)", file=sys.stderr)
+            return
+
+        # Use sliding window: last 10 responses only (or all if < 10)
+        WINDOW_SIZE = 10
+        responses = all_responses[-WINDOW_SIZE:]
+
+        # PRE-SPLIT: Do this ONCE outside the loop (optimization)
+        response_data = [resp.strdata.split(';') for resp in responses]
+
+        # Get stat names in DB order
+        stat_names = [s[0] for s in session.query(Stat.name).order_by(Stat.order_idx).all()]
+
+        print(f"Updating metrics for {trainer.name} with {len(responses)} responses (window of last {WINDOW_SIZE}) across {len(stat_names)} stats", file=sys.stderr)
+
+        # Calculate increments for each stat
+        for idx, stat_name in enumerate(stat_names):
+            increments = []
+
+            for i in range(1, len(response_data)):
+                try:
+                    prev_val = float(response_data[i-1][idx])
+                    curr_val = float(response_data[i][idx])
+                    increment = curr_val - prev_val
+
+                    # Only include non-negative increments (handles monotonic stats)
+                    # Negative increments could indicate data errors or stat resets
+                    if increment >= 0:
+                        increments.append(increment)
+                except (ValueError, IndexError):
+                    # Skip if values can't be parsed or index out of range
+                    continue
+
+            # Only create/update metrics if we have data
+            if increments:
+                avg_increment = sum(increments) / len(increments)
+                std_dev = cls._calculate_std_deviation(increments, avg_increment)
+
+                # Warning threshold: average + 2 standard deviations (95% confidence)
+                # This will flag values more than 2σ above the trainer's typical increment
+                warning_threshold = avg_increment + (2 * std_dev) if std_dev else avg_increment * 2
+
+                # Update or create metric record
+                metric = session.query(cls).filter_by(
+                    trainer_id=trainer.id,
+                    stat_name=stat_name
+                ).first()
+
+                if not metric:
+                    metric = cls(trainer_id=trainer.id, stat_name=stat_name)
+                    session.add(metric)
+
+                metric.average_monthly_increment = avg_increment
+                metric.std_deviation = std_dev
+                metric.warning_threshold = warning_threshold
+                metric.first_response_date = responses[0].timestamp
+                metric.last_response_date = responses[-1].timestamp
+                metric.last_calculated = str(datetime.datetime.now().timestamp())
+
+    @staticmethod
+    def _calculate_std_deviation(values, mean=None):
+        """Calculate standard deviation of a list of values
+
+        Args:
+            values: List of numeric values
+            mean: Pre-calculated mean (optional, will calculate if not provided)
+
+        Returns:
+            Standard deviation (float)
+        """
+        if len(values) < 2:
+            return 0.0
+
+        if mean is None:
+            mean = sum(values) / len(values)
+
+        variance = sum((x - mean) ** 2 for x in values) / (len(values) - 1)  # Sample variance (n-1)
+        return variance ** 0.5
 
 
 class Response(Base):
@@ -293,6 +418,16 @@ class Response(Base):
         session.add(trainer_obj)
         session.flush()
         session.commit()
+
+        # Update calculated metrics for this trainer (for personalized validation warnings)
+        # This runs after the response is saved, using previous responses
+        try:
+            TrainerStatMetrics.update_metrics_for_trainer(session, trainer_obj)
+            session.commit()  # Commit the metrics updates
+        except Exception as e:
+            # Don't fail the response save if metrics update fails
+            print(f"Warning: Failed to update metrics for {trainer_obj.name}: {e}", file=sys.stderr)
+            session.rollback()
 
         return response
 
