@@ -222,6 +222,8 @@ class TrainerStatMetrics(Base):
             session: SQLAlchemy session
             trainer: Trainer object
         """
+        import json
+
         # Get all responses for this trainer, ordered by time
         all_responses = session.query(Response)\
             .filter(Response.trainer_id == trainer.id)\
@@ -243,10 +245,28 @@ class TrainerStatMetrics(Base):
         # Get stat names in DB order
         stat_names = [s[0] for s in session.query(Stat.name).order_by(Stat.order_idx).all()]
 
-        print(f"Updating metrics for {trainer.name} with {len(responses)} responses (window of last {WINDOW_SIZE}) across {len(stat_names)} stats", file=sys.stderr)
+        # Load category information from stats.json
+        static_stat_info = json.load(open("stats.json", 'r'))
+        stat_categories = {}
+        category_idx = static_stat_info["key"].index("category")
+        for stat_name_key, stat_vals in static_stat_info["data"].items():
+            stat_categories[stat_name_key] = stat_vals[category_idx]
 
-        # Calculate increments for each stat
+        # Categories to skip (don't calculate metrics for these)
+        SKIP_CATEGORIES = {"Regional"}
+
+        # Calculate increments for each stat and collect metrics data
+        metrics_data = []  # Will hold calculated metrics for batch insertion/update
+        skipped_count = 0
+        timestamp_now = str(datetime.datetime.now().timestamp())
+
         for idx, stat_name in enumerate(stat_names):
+            # Skip certain categories (e.g., Regional stats don't need warnings)
+            category = stat_categories.get(stat_name)
+            if category in SKIP_CATEGORIES:
+                skipped_count += 1
+                continue
+
             increments = []
 
             for i in range(1, len(response_data)):
@@ -263,7 +283,7 @@ class TrainerStatMetrics(Base):
                     # Skip if values can't be parsed or index out of range
                     continue
 
-            # Only create/update metrics if we have data
+            # Only collect metrics if we have data
             if increments:
                 avg_increment = sum(increments) / len(increments)
                 std_dev = cls._calculate_std_deviation(increments, avg_increment)
@@ -272,22 +292,42 @@ class TrainerStatMetrics(Base):
                 # This will flag values more than 2σ above the trainer's typical increment
                 warning_threshold = avg_increment + (2 * std_dev) if std_dev else avg_increment * 2
 
-                # Update or create metric record
-                metric = session.query(cls).filter_by(
-                    trainer_id=trainer.id,
-                    stat_name=stat_name
-                ).first()
+                metrics_data.append({
+                    'trainer_id': trainer.id,
+                    'stat_name': stat_name,
+                    'average_monthly_increment': avg_increment,
+                    'std_deviation': std_dev,
+                    'warning_threshold': warning_threshold,
+                    'first_response_date': responses[0].timestamp,
+                    'last_response_date': responses[-1].timestamp,
+                    'last_calculated': timestamp_now
+                })
 
-                if not metric:
-                    metric = cls(trainer_id=trainer.id, stat_name=stat_name)
-                    session.add(metric)
+        print(f"Calculated {len(metrics_data)} metrics for {trainer.name} (skipped {skipped_count} from excluded categories)", file=sys.stderr)
 
-                metric.average_monthly_increment = avg_increment
-                metric.std_deviation = std_dev
-                metric.warning_threshold = warning_threshold
-                metric.first_response_date = responses[0].timestamp
-                metric.last_response_date = responses[-1].timestamp
-                metric.last_calculated = str(datetime.datetime.now().timestamp())
+        # Batch DB operations: query existing metrics once, then separate into inserts vs updates
+        if metrics_data:
+            # Get all existing metrics for this trainer in one query
+            existing_stat_names = [m['stat_name'] for m in metrics_data]
+            existing_metrics = session.query(cls).filter(
+                cls.trainer_id == trainer.id,
+                cls.stat_name.in_(existing_stat_names)
+            ).all()
+            existing_stat_names_set = {m.stat_name for m in existing_metrics}
+
+            # Separate into updates (already exist) and inserts (new)
+            to_insert = [m for m in metrics_data if m['stat_name'] not in existing_stat_names_set]
+            to_update = [m for m in metrics_data if m['stat_name'] in existing_stat_names_set]
+
+            # Batch insert new metrics
+            if to_insert:
+                session.bulk_insert_mappings(cls, to_insert)
+                print(f"Batch inserted {len(to_insert)} new metrics", file=sys.stderr)
+
+            # Batch update existing metrics
+            if to_update:
+                session.bulk_update_mappings(cls, to_update)
+                print(f"Batch updated {len(to_update)} existing metrics", file=sys.stderr)
 
     @staticmethod
     def _calculate_std_deviation(values, mean=None):
