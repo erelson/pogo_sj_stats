@@ -1,5 +1,45 @@
 #! /usr/bin/env python3
 
+# Use: Launch this from my generate-stats bash script.
+
+# Purpose: Navigate through and edit some DB entries
+
+# Secondary purpose? Browse DB in some interesting way
+
+    ## return
+    ## # Start:
+    ## trainers_lookup, response_refs = load_entries_from_db(session)
+    ## trainer_list = trainers_lookup.keys()
+    ## # Prompt: What trainer do you want to look at?
+    ## inp = input("What trainer do you want to look at? ")
+    ## result = process.extract(inp, trainer_list, limit=3)
+    ## print(result)
+    ## # Check first selection
+    ## if result[0][1] == inp or \
+    ##        (result[0][1] > result[1][1] and confirm(f"Is '{result[0][0]}' correct? (y/n)")):
+    ##     trainer = result[0][1]
+    ## # Else prompt user for which of top matches to use
+    ## else:
+    ##     trainer = prompt_confirm_selection([x[0] for x in result])
+    ## # Alternate: Abort; prompt save if diffs made
+    ## # Fuzzy look-up
+    ## # List surveys by month (limit to 12?)
+    ## "Which survey do you want to inspect the values of?"
+    ## #  Function to generate "survey month" from timestamp
+    ## # Prompt select survey by index
+    ## return
+    ## # Alternate: q: Go back to trainer selection
+    ## # Prompt: What stat do you want to inspect?
+    ## inp = input("What stat do you need to check? ")
+    ## result = process.extract(inp, trainer_list, limit=3)
+    ## print(result)
+    ## # Alternate options: q: go back to list of surveys
+    ## # Fuzzy look-up
+    ## # Print value
+    ## # Prompt: Set different value?
+    ## # Update value in DB (but don't sync?)
+    ## # Prompt: Lookup another value or 'q':
+
 # Standard library
 from argparse import ArgumentParser
 import datetime
@@ -15,11 +55,6 @@ import sqlite3
 from tables import Stat, Response, Trainer
 from settings import LOCAL_DB_SPECIFIER, local_db_specifier_from_file
 
-# Use: Launch this from my generate-stats bash script.
-
-# Purpose: Navigate through and edit some DB entries
-
-# Secondary purpose? Browse DB in some interesting way
 
 def load_entries_from_db(session):
     """Read survey responses... TODO
@@ -28,27 +63,12 @@ def load_entries_from_db(session):
         trainers_lookup
         response_refs
     """
-    #entries = {}
-
     # Get our trainer name:id lookup from the DB
     trainers = session.query(Trainer).all()
     trainers_lookup = {trainer.name: trainer.id for trainer in trainers}
 
     # Read all responses
     responses = session.query(Response).all()
-    #for response in responses:
-    #    trainer = trainers_lookup[response.trainer_id]
-    #    if trainer == "test" or trainer == "*_-#test":
-    #        continue
-    #    if trainer not in entries:
-    #        entries[trainer] = {}
-
-    #    # Convert from timestamp (db) to datetime (used by our code)
-    #    #entry_date = datetime.datetime.fromtimestamp(float(response.timestamp), tz=timezone('US/Pacific'))
-    #    # Convert from timestamp (db) to datetime.date (used by our code)
-    #    entry_date = datetime.date.fromtimestamp(float(response.timestamp))#, tz=timezone('US/Pacific'))
-
-    #    entries[trainer][entry_date] = Stat.unpack_strdata(response.strdata, session, pad_data=True)
     response_refs = {response.id: {"trainer_id": response.trainer_id,
                                    "month": report_month_year(response.timestamp)} for
                      response in responses}
@@ -217,40 +237,6 @@ def prompt_confirm_selection(options, vals=None, abort_info=""):
 def main(args):
     editor = Editor(args.db)
     editor.get_trainer()
-
-    ## return
-    ## # Start:
-    ## trainers_lookup, response_refs = load_entries_from_db(session)
-    ## trainer_list = trainers_lookup.keys()
-    ## # Prompt: What trainer do you want to look at?
-    ## inp = input("What trainer do you want to look at? ")
-    ## result = process.extract(inp, trainer_list, limit=3)
-    ## print(result)
-    ## # Check first selection
-    ## if result[0][1] == inp or \
-    ##        (result[0][1] > result[1][1] and confirm(f"Is '{result[0][0]}' correct? (y/n)")):
-    ##     trainer = result[0][1]
-    ## # Else prompt user for which of top matches to use
-    ## else:
-    ##     trainer = prompt_confirm_selection([x[0] for x in result])
-    ## # Alternate: Abort; prompt save if diffs made
-    ## # Fuzzy look-up
-    ## # List surveys by month (limit to 12?)
-    ## "Which survey do you want to inspect the values of?"
-    ## #  Function to generate "survey month" from timestamp
-    ## # Prompt select survey by index
-    ## return
-    ## # Alternate: q: Go back to trainer selection
-    ## # Prompt: What stat do you want to inspect?
-    ## inp = input("What stat do you need to check? ")
-    ## result = process.extract(inp, trainer_list, limit=3)
-    ## print(result)
-    ## # Alternate options: q: go back to list of surveys
-    ## # Fuzzy look-up
-    ## # Print value
-    ## # Prompt: Set different value?
-    ## # Update value in DB (but don't sync?)
-    ## # Prompt: Lookup another value or 'q':
 
 def prompt_survey(trainer_surveys):
     values, keys = zip(*trainer_surveys)
