@@ -74,9 +74,10 @@
             }
 
             const warningFactor = parseFloat(input.dataset.warningFactor);
+            const warningThreshold = parseFloat(input.dataset.warningThreshold || 0);
 
-            // Skip if warning_factor is 0 or not set (disabled)
-            if (!warningFactor || warningFactor === 0) {
+            // Skip if warning_factor is 0 (disabled) or no personalized threshold exists
+            if (!warningFactor || warningFactor === 0 || !warningThreshold || warningThreshold === 0) {
                 return;
             }
 
@@ -89,22 +90,19 @@
             }
 
             const previousValue = parseFloat(placeholderText.split(' ')[0]);
+            const increment = currentValue - previousValue;
 
-            // Check if current value exceeds warning threshold
-            if (previousValue > 0 && currentValue > previousValue * warningFactor) {
+            // Check if increment exceeds personalized threshold
+            if (increment > (warningThreshold * warningFactor)) {
                 // Get the stat name from the label
                 const label = input.parentElement.parentElement.querySelector('dt');
                 const statName = label ? label.textContent.split('(')[0].trim() : input.name;
-
-                const increase = currentValue - previousValue;
-                const percentIncrease = ((increase / previousValue) * 100).toFixed(1);
 
                 warnings.push({
                     statName: statName,
                     previousValue: previousValue,
                     currentValue: currentValue,
-                    increase: increase,
-                    percentIncrease: percentIncrease
+                    increase: increment
                 });
             }
         });
@@ -123,7 +121,7 @@
             message += w.statName + "\n";
             message += "  Previous: " + w.previousValue + "\n";
             message += "  Entered:  " + w.currentValue + "\n";
-            message += "  Increase: +" + w.increase + " (+" + w.percentIncrease + "%)\n\n";
+            message += "  Increase: +" + w.increase + "\n\n";
         });
 
         return confirm(message);

@@ -25,7 +25,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import ExceptionContext
 
 # Local
-from tables import Stat, Response, Trainer
+from tables import Stat, Response, Trainer, TrainerStatMetrics
 from settings import LOCAL_DB_SPECIFIER, PLOT_DIR
 from age_survey import register_age_survey_routes
 
@@ -208,7 +208,7 @@ class PogoStatsForm(Form):
     pass
 
 
-def survey_gen(stats_list, formclass, _test_default_val=None):
+def survey_gen(stats_list, formclass, _test_default_val=None, trainer_metrics=None):
     """Sets survey fields as attrs on form object
 
     Also inserts sectional breaks.
@@ -221,10 +221,14 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
         formclass: Class of a form object.
         _test_default_val: Default value for all fields. Normally set by
             test code.
+        trainer_metrics: Dict of stat_name -> warning_threshold for personalized validation.
+            Defaults to None (no personalized thresholds).
 
     Returns:
         A formclass with attributes set, ready to be instantiated.
     """
+    if trainer_metrics is None:
+        trainer_metrics = {}
     statlist = []  # lookup of attribute names on the FormClass which hold Field objects
     statdivider = []  # list of booleans: when True, jinja2 template script will add a divider after the stat
     # TODO(enhancement) this is stupidly brittle? Every time I add a new non-badge stat...? or if we get too many badges
@@ -268,6 +272,9 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
             default_val = previous_val
         elif stat.required == 0:
             checks = [validators.Optional()] + checks
+        # Get personalized warning threshold for this stat (if available)
+        warning_threshold = trainer_metrics.get(stat.name, 0)
+
         if stat.numtype == "Float":
             # TODO fix float input here?
             # Per wtforms docs, DecimalField is usually preferred over FloatField
@@ -278,6 +285,7 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
                                             "placeholder": previous_val_str,
                                             "previous_val_with_badge": previous_val_str,  # unused
                                             "data-warning-factor": warning_factor,
+                                            "data-warning-threshold": warning_threshold,
                                             },
                                  )
         else:
@@ -287,6 +295,7 @@ def survey_gen(stats_list, formclass, _test_default_val=None):
                                             "placeholder": previous_val_str,
                                             "previous_val_with_badge": previous_val_str,  # unused
                                             "data-warning-factor": warning_factor,
+                                            "data-warning-threshold": warning_threshold,
                                             },
                                  )
         # Set the field object on our form, which will later generate the HTML
@@ -392,7 +401,21 @@ def fill_survey(user=None):
     except FileNotFoundError:
         stat_help = {}
 
-    PogoForm = survey_gen(stats_list, PogoStatsForm)
+    # Load personalized warning thresholds for this trainer (if available)
+    trainer_metrics = {}
+    if user:
+        try:
+            trainer = session.query(Trainer).filter_by(name=user.lower()).one()
+            metrics = session.query(TrainerStatMetrics).filter_by(trainer_id=trainer.id).all()
+            # Create lookup dict: stat_name -> warning_threshold
+            trainer_metrics = {m.stat_name: m.warning_threshold for m in metrics}
+            print(f"Loaded {len(trainer_metrics)} personalized thresholds for {user}", file=sys.stderr)
+        except Exception as e:
+            # If we can't load metrics, just continue without them
+            print(f"Could not load trainer metrics for {user}: {e}", file=sys.stderr)
+            pass
+
+    PogoForm = survey_gen(stats_list, PogoStatsForm, trainer_metrics=trainer_metrics)
     try:
         form = PogoForm(request.form)
         real_function_call = True  # TODO cleanup
