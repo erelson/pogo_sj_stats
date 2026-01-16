@@ -54,6 +54,45 @@ TYPE_MEDALS = ["Schoolkid",  # This list's fields get put at the very end of the
 app = Flask(__name__)
 
 
+def calculate_months_since_survey(days_since_last_survey):
+    """Calculate approximate number of months since last survey submission.
+
+    Uses a simplified model treating all months as ~30 days, with a 7-day grace
+    period to account for the ±3 day end-of-month window used by dashboard_html_from_db.py.
+
+    Formula: months_ago = int((days_since_last_survey + 7) / 30)
+
+    The +7 accounts for the fact that both the last survey and current survey could
+    be at opposite ends of their respective end-of-month windows (±3 days each),
+    giving us up to 6-7 days of overlap to account for.
+
+    This is intentionally crude to match the crude nature of the warning thresholds.
+
+    Args:
+        days_since_last_survey (int): Number of days since last survey submission
+
+    Returns:
+        int: Number of months ago, where:
+            - 0-22 days → 0 months (within same monthly survey cycle)
+            - 23-52 days → 1 month
+            - 53-82 days → 2 months
+            - 83-112 days → 3 months
+            - 113-142 days → 4 months
+            - etc.
+
+    Examples:
+        >>> calculate_months_since_survey(0)
+        0
+        >>> calculate_months_since_survey(22)
+        0
+        >>> calculate_months_since_survey(30)
+        1
+        >>> calculate_months_since_survey(130)
+        4
+    """
+    return int((days_since_last_survey + 7) / 30)
+
+
 def get_survey_data_in_survey_order(session, user=None):
     """Load data from DB for user and put it in order that we want to display the survey in.
 
@@ -403,6 +442,7 @@ def fill_survey(user=None):
 
     # Load personalized warning thresholds for this trainer (if available)
     trainer_metrics = {}
+    disable_warnings = False
     if user:
         try:
             trainer = session.query(Trainer).filter_by(name=user.lower()).one()
@@ -410,10 +450,25 @@ def fill_survey(user=None):
             # Create lookup dict: stat_name -> warning_threshold
             trainer_metrics = {m.stat_name: m.warning_threshold for m in metrics}
             print(f"Loaded {len(trainer_metrics)} personalized thresholds for {user}", file=sys.stderr)
+
+            # Check if last survey was more than 130 days ago (slightly more than 4 months)
+            if trainer.newest_response_date:
+                last_response_timestamp = float(trainer.newest_response_date)
+                last_response_date = datetime.fromtimestamp(last_response_timestamp)
+                days_since_last_survey = (datetime.now() - last_response_date).days
+
+                if days_since_last_survey > 130:
+                    disable_warnings = True
+                    print(f"Last survey was {days_since_last_survey} days ago (>130 days). Disabling validation warnings.", file=sys.stderr)
         except Exception as e:
             # If we can't load metrics, just continue without them
             print(f"Could not load trainer metrics for {user}: {e}", file=sys.stderr)
             pass
+
+    # Disable warnings by setting all warning_factors to 0 if gap is too large
+    if disable_warnings:
+        for stat_entry in stats_list:
+            stat_entry[3] = 0  # warning_factor is at index 3
 
     PogoForm = survey_gen(stats_list, PogoStatsForm, trainer_metrics=trainer_metrics)
     try:
