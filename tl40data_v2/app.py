@@ -451,15 +451,28 @@ def fill_survey(user=None):
             trainer_metrics = {m.stat_name: m.warning_threshold for m in metrics}
             print(f"Loaded {len(trainer_metrics)} personalized thresholds for {user}", file=sys.stderr)
 
-            # Check if last survey was more than 130 days ago (slightly more than 4 months)
+            # Apply time-based threshold adjustments based on months since last survey
             if trainer.newest_response_date:
                 last_response_timestamp = float(trainer.newest_response_date)
                 last_response_date = datetime.fromtimestamp(last_response_timestamp)
                 days_since_last_survey = (datetime.now() - last_response_date).days
+                months_since_survey = calculate_months_since_survey(days_since_last_survey)
 
-                if days_since_last_survey > 130:
+                if months_since_survey >= 5:
+                    # Disable warnings for very long gaps (5+ months / 143+ days)
                     disable_warnings = True
-                    print(f"Last survey was {days_since_last_survey} days ago (>130 days). Disabling validation warnings.", file=sys.stderr)
+                    print(f"Last survey was {days_since_last_survey} days ago ({months_since_survey} months). "
+                          f"Disabling validation warnings.", file=sys.stderr)
+                elif months_since_survey >= 2:
+                    # Apply time multiplier for moderate gaps (2-4 months / 53-142 days)
+                    for stat_name in trainer_metrics:
+                        trainer_metrics[stat_name] *= months_since_survey
+                    print(f"Last survey was {days_since_last_survey} days ago ({months_since_survey} months). "
+                          f"Applying {months_since_survey}x multiplier to warning thresholds.", file=sys.stderr)
+                else:
+                    # 0-1 months: normal behavior, no adjustment needed
+                    print(f"Last survey was {days_since_last_survey} days ago ({months_since_survey} months). "
+                          f"Using standard warning thresholds.", file=sys.stderr)
         except Exception as e:
             # If we can't load metrics, just continue without them
             print(f"Could not load trainer metrics for {user}: {e}", file=sys.stderr)
