@@ -52,7 +52,7 @@ from sqlalchemy.orm.exc import NoResultFound, UnmappedInstanceError
 import sqlite3
 
 # Local
-from tables import Stat, Response, Trainer
+from tables import Stat, Response, Trainer, TrainerStatMetrics
 from settings import LOCAL_DB_SPECIFIER, local_db_specifier_from_file
 
 
@@ -165,6 +165,20 @@ class Editor():
             self.session.flush()
             self.session.commit()
             self.changed = False
+
+            # Automatically recalculate metrics for this trainer
+            print("\nRecalculating warning thresholds for this trainer...")
+            trainer = self.session.query(Trainer).filter(Trainer.id == survey.trainer_id).first()
+            if trainer:
+                try:
+                    TrainerStatMetrics.update_metrics_for_trainer(self.session, trainer)
+                    self.session.commit()
+                    print(f"✓ Metrics updated for {trainer.name}")
+                except Exception as e:
+                    print(f"⚠️  Warning: Could not update metrics: {e}")
+                    # Continue anyway - the response edit was successful
+            else:
+                print("⚠️  Warning: Could not find trainer to update metrics")
 
     def edit_stat(self, stat, stat_val):
         print(f"The current value for '{stat}' is: {stat_val}")
