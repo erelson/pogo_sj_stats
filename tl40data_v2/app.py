@@ -567,6 +567,95 @@ def fill_survey(user=None):
     return html_out
 
 
+@app.route('/debug/survey/<username>')
+def debug_survey_thresholds(username=None):
+    """
+    Debug view showing calculated warning thresholds for a trainer.
+
+    Shows the personalized warning thresholds, time since last survey,
+    and any time-based multipliers applied.
+    """
+    session = Session(engine, autoflush=True)
+
+    if not username:
+        return "No username provided", 400
+
+    try:
+        # Get trainer
+        trainer = session.query(Trainer).filter_by(name=username.lower()).one()
+
+        # Get metrics
+        metrics = session.query(TrainerStatMetrics).filter_by(trainer_id=trainer.id).all()
+
+        # Calculate time since last survey
+        days_since_last = None
+        months_since_last = None
+        time_multiplier_info = None
+
+        if trainer.newest_response_date:
+            last_response_timestamp = float(trainer.newest_response_date)
+            last_response_date = datetime.fromtimestamp(last_response_timestamp)
+            days_since_last = (datetime.now() - last_response_date).days
+            months_since_last = calculate_months_since_survey(days_since_last)
+
+            # Determine what multiplier is applied
+            if months_since_last >= 5:
+                time_multiplier_info = "DISABLED (5+ months)"
+            elif months_since_last >= 2:
+                time_multiplier_info = f"{months_since_last}x multiplier"
+            else:
+                time_multiplier_info = "No adjustment (0-1 months)"
+
+        # Get stat metadata from stats.json
+        import json
+        static_stat_info = json.load(open("stats.json", 'r'))
+        warning_factor_idx = static_stat_info["key"].index("warning_factor")
+        stat_warning_factors = {}
+        for stat_name, stat_vals in static_stat_info["data"].items():
+            stat_warning_factors[stat_name] = stat_vals[warning_factor_idx]
+
+        # Organize metrics data
+        metrics_data = []
+        for metric in metrics:
+            warning_factor = stat_warning_factors.get(metric.stat_name, 0)
+
+            # Calculate effective threshold (with warning_factor)
+            effective_threshold = metric.warning_threshold * warning_factor if warning_factor else 0
+
+            metrics_data.append({
+                'stat_name': metric.stat_name,
+                'avg_increment': metric.average_monthly_increment,
+                'std_deviation': metric.std_deviation,
+                'warning_threshold': metric.warning_threshold,
+                'warning_factor': warning_factor,
+                'effective_threshold': effective_threshold,
+                'last_calculated': datetime.fromtimestamp(float(metric.last_calculated)).strftime('%Y-%m-%d %H:%M:%S')
+            })
+
+        # Sort by stat name
+        metrics_data.sort(key=lambda x: x['stat_name'])
+
+        session.close()
+
+        return render_template(
+            'debug_thresholds.html',
+            trainer_name=trainer.name,
+            proper_name=trainer.proper_name,
+            metrics=metrics_data,
+            days_since_last=days_since_last,
+            months_since_last=months_since_last,
+            time_multiplier_info=time_multiplier_info,
+            last_response_date=last_response_date.strftime('%Y-%m-%d') if trainer.newest_response_date else None
+        )
+
+    except NoResultFound:
+        session.close()
+        return f"Trainer '{username}' not found", 404
+    except Exception as e:
+        session.close()
+        return f"Error: {e}", 500
+
+
 @app.route('/visualization')
 def trainer_visualization():
     """Display the trainer visualization page"""

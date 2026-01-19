@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug: Warning Thresholds - {{ proper_name or trainer_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .info-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .info-box.warning {
+            background-color: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .info-box.disabled {
+            background-color: #ffebee;
+            border-left-color: #f44336;
+        }
+        .info-row {
+            margin: 8px 0;
+        }
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 180px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .number {
+            text-align: right;
+            font-family: monospace;
+        }
+        .stat-name {
+            font-weight: 500;
+        }
+        .disabled {
+            color: #999;
+            font-style: italic;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted #666;
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .back-link:hover {
+            background-color: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Warning Threshold Debug View</h1>
+        <h2>Trainer: {{ proper_name or trainer_name }}</h2>
+
+        {% if last_response_date %}
+        <div class="info-box {% if months_since_last >= 5 %}disabled{% elif months_since_last >= 2 %}warning{% endif %}">
+            <div class="info-row">
+                <span class="info-label">Last Survey:</span>
+                {{ last_response_date }} ({{ days_since_last }} days ago)
+            </div>
+            <div class="info-row">
+                <span class="info-label">Months Since Last:</span>
+                {{ months_since_last }} months
+            </div>
+            <div class="info-row">
+                <span class="info-label">Time Adjustment:</span>
+                <strong>{{ time_multiplier_info }}</strong>
+            </div>
+        </div>
+        {% else %}
+        <div class="info-box">
+            <p><em>No previous surveys found for this trainer.</em></p>
+        </div>
+        {% endif %}
+
+        <h3>Calculated Warning Thresholds ({{ metrics|length }} stats)</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Stat Name</th>
+                    <th class="number">
+                        <span class="tooltip">Avg Increment
+                            <span class="tooltiptext">Average monthly increment</span>
+                        </span>
+                    </th>
+                    <th class="number">
+                        <span class="tooltip">Std Dev (σ)
+                            <span class="tooltiptext">Standard deviation of increments</span>
+                        </span>
+                    </th>
+                    <th class="number">
+                        <span class="tooltip">Base Threshold
+                            <span class="tooltiptext">avg + 2σ (before warning_factor)</span>
+                        </span>
+                    </th>
+                    <th class="number">
+                        <span class="tooltip">Warning Factor
+                            <span class="tooltiptext">Multiplier from stats.json (0 = disabled)</span>
+                        </span>
+                    </th>
+                    <th class="number">
+                        <span class="tooltip">Effective Threshold
+                            <span class="tooltiptext">Base × Warning Factor (used in survey)</span>
+                        </span>
+                    </th>
+                    <th>Last Calculated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for metric in metrics %}
+                <tr {% if metric.warning_factor == 0 %}class="disabled"{% endif %}>
+                    <td class="stat-name">{{ metric.stat_name }}</td>
+                    <td class="number">{{ "%.2f"|format(metric.avg_increment) }}</td>
+                    <td class="number">{{ "%.2f"|format(metric.std_deviation) }}</td>
+                    <td class="number">{{ "%.2f"|format(metric.warning_threshold) }}</td>
+                    <td class="number">{{ metric.warning_factor }}</td>
+                    <td class="number">
+                        {% if metric.effective_threshold > 0 %}
+                            <strong>{{ "%.2f"|format(metric.effective_threshold) }}</strong>
+                        {% else %}
+                            <span class="disabled">disabled</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ metric.last_calculated }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 30px; padding: 15px; background-color: #f0f0f0; border-radius: 4px;">
+            <h4 style="margin-top: 0;">How to Read This Data:</h4>
+            <ul>
+                <li><strong>Avg Increment:</strong> Average monthly increase for this stat</li>
+                <li><strong>Std Dev (σ):</strong> Standard deviation of monthly increases</li>
+                <li><strong>Base Threshold:</strong> Calculated as avg + 2σ (covers ~95% of normal variation)</li>
+                <li><strong>Warning Factor:</strong> Stat-specific multiplier from stats.json (0 = warnings disabled for this stat)</li>
+                <li><strong>Effective Threshold:</strong> Final threshold used in survey validation (base × warning_factor)</li>
+                <li><em>Gray rows:</em> Stats with warning_factor = 0 (no warnings will be shown)</li>
+            </ul>
+        </div>
+
+        <a href="/survey/{{ trainer_name }}" class="back-link">← Back to Survey</a>
+    </div>
+</body>
+</html>
