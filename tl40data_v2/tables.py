@@ -225,9 +225,9 @@ class TrainerStatMetrics(Base):
         import json
 
         # Get all responses for this trainer, ordered by time
-        all_responses = session.query(Response)\
-            .filter(Response.trainer_id == trainer.id)\
-            .order_by(Response.timestamp)\
+        all_responses = session.query(Response) \
+            .filter(Response.trainer_id == trainer.id) \
+            .order_by(Response.timestamp) \
             .all()
 
         # Decision: Need at least 3 responses to calculate increments

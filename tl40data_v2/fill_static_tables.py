@@ -3,7 +3,7 @@
 # Standard library
 from argparse import ArgumentParser
 import json
-from tables import Stat
+from tables import Stat, Trainer, TrainerStatMetrics, Response
 
 # Third party
 from sqlalchemy import select
@@ -62,10 +62,85 @@ def fill_stats(session: Session, changed: bool = False):
 # No static trainer or response data, unless we're testing something
 
 
-def main(args):
-    """ Get command line args, and call the function that fill the static tables.
-    """
+def fill_trainer_metrics(session: Session):
+    """Calculate metrics for trainers who don't already have them.
 
+    This is intended for converting old databases to the new schema with
+    trainer_stat_metrics table. Only generates metrics for trainers who:
+    - Don't already have metrics in the database
+    - Have at least 2 survey responses
+
+    For updating existing metrics after manual corrections, use db_editor.py
+    which automatically recalculates metrics after edits.
+
+    Args:
+        session: SQLAlchemy session
+
+    Returns:
+        dict: Statistics about the operation
+    """
+    print("\nFilling missing trainer metrics...")
+
+    # Get all trainers
+    try:
+        all_trainers = session.query(Trainer).all()
+    except OperationalError as e:
+        print(f"ERROR: Cannot read trainers table: {e}")
+        return {'error': True}
+
+    total_trainers = len(all_trainers)
+    print(f"  Found {total_trainers} trainers")
+
+    stats = {
+        'total': total_trainers,
+        'processed': 0,
+        'skipped_no_responses': 0,
+        'skipped_has_metrics': 0,
+        'errors': 0
+    }
+
+    # Process each trainer
+    for trainer in all_trainers:
+        # Check if trainer already has metrics
+        existing_metrics_count = session.query(TrainerStatMetrics).filter(
+            TrainerStatMetrics.trainer_id == trainer.id
+        ).count()
+
+        if existing_metrics_count > 0:
+            stats['skipped_has_metrics'] += 1
+            continue
+
+        # Get response count
+        response_count = session.query(Response).filter(
+            Response.trainer_id == trainer.id
+        ).count()
+
+        # Need at least 2 responses to calculate metrics
+        if response_count < 2:
+            stats['skipped_no_responses'] += 1
+            continue
+
+        # Calculate metrics for this trainer (who has no existing metrics)
+        try:
+            TrainerStatMetrics.update_metrics_for_trainer(session, trainer)
+            stats['processed'] += 1
+        except Exception as e:
+            print(f"  Warning: Error processing {trainer.name}: {e}")
+            stats['errors'] += 1
+            session.rollback()
+            continue
+
+    # Print summary
+    print(f"  Processed: {stats['processed']} trainers (new metrics created)")
+    print(f"  Skipped: {stats['skipped_has_metrics']} (already have metrics)")
+    print(f"  Skipped: {stats['skipped_no_responses']} (insufficient responses)")
+    if stats['errors'] > 0:
+        print(f"  Errors: {stats['errors']}")
+
+    return stats
+
+
+def main(args):
     ran_ok = True
     changed = False
 
@@ -73,6 +148,8 @@ def main(args):
     #engine = get_engine(db_specifier)
     engine = create_engine(db_specifier)
     session = Session(engine, autoflush=True)
+
+    # Fill static stat data
     changed = fill_stats(session) or changed
     try:
         session.commit()
@@ -80,14 +157,28 @@ def main(args):
         print("ERROR: Did you run tables.py to create the tables first?")
         print(e)
         ran_ok = False
+
+    # Calculate trainer metrics (unless skipped)
+    if ran_ok and not args.skip_metrics:
+        try:
+            metrics_stats = fill_trainer_metrics(session)
+            session.commit()
+            if metrics_stats.get('error'):
+                print("WARNING: Metrics calculation had errors")
+        except OperationalError as e:
+            print(f"WARNING: Could not calculate trainer metrics: {e}")
+            print("  (This is expected for new/empty databases)")
+    elif ran_ok and args.skip_metrics:
+        print("\nSkipping trainer metrics calculation (--skip-metrics)")
+
     session.flush()
     session.close()
 
     if ran_ok:
         if changed:
-            print("Success!")
+            print("\nSuccess!")
         else:
-            print("NOTE!: No changes needed to be made to the DB...")
+            print("\nNOTE!: No changes needed to be made to the DB...")
 
         print("You can inspect the (presumably new, mostly empty) DB with:")
         print(f"\tsqlite3 {LOCAL_DB_FILENAME} .dump")
@@ -97,5 +188,10 @@ def main(args):
 
 if __name__ == '__main__':
     parser = ArgumentParser("Fill in non-user-submitted data to a db. Can be re-run to add new survey rows.")
+    parser.add_argument(
+        '--skip-metrics',
+        action='store_true',
+        help='Skip calculating trainer metrics (faster for testing/new DBs)'
+    )
     args = parser.parse_args()
     main(args)
