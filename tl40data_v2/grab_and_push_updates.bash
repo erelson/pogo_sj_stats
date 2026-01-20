@@ -2,14 +2,94 @@
 login=$(grep login config.toml | cut -d' ' -f3 | tr -d '"')
 
 local_db_location="pogo_sj.db"  # TODO get this from config.toml
+temp_db_location="pogo_sj.db.tmp"
 remote_db_location="/home/public/db/pogo_sj.db"
-# Grab database from server
+
+# Grab database from server to temporary location
 echo "Grabbing current DB from server..."
-scp $login:/home/public/db/pogo_sj.db .
+scp $login:$remote_db_location $temp_db_location
 
 if [ "$EXIT_AFTER_GRAB" = 'true' ]; then
+    # Move temp to final location and exit
+    mv $temp_db_location $local_db_location
+    echo "Database downloaded to $local_db_location"
     exit 0
 fi
+
+# Validate database schema compatibility
+echo ""
+echo "Validating database schema..."
+schema_valid=false
+migration_attempted=false
+
+while [[ "$schema_valid" = false ]]; do
+    if python3 validate_db_schema.py $temp_db_location; then
+        schema_valid=true
+        break
+    fi
+
+    echo ""
+    echo "WARNING: Downloaded database schema is incompatible with current code!"
+
+    # Offer schema migration only once
+    if [[ "$migration_attempted" = false ]]; then
+        echo ""
+        echo "The downloaded database appears to be an older schema version."
+        echo "Would you like to attempt automatic schema migration? (y/n)"
+        echo "(This will run tables.py and fill_static_tables.py on the downloaded DB)"
+        read -r answer
+
+        if [[ "$answer" = "y" ]]; then
+            migration_attempted=true
+            echo ""
+            echo "Running schema migration on temporary database..."
+            echo ""
+
+            # Run tables.py to add missing tables/columns
+            echo "Step 1: Updating schema with tables.py..."
+            if DB_LOCATION=$temp_db_location python3 tables.py; then
+                echo "✓ Schema update completed"
+            else
+                echo "✗ Schema update had errors, but continuing..."
+            fi
+            echo ""
+
+            # Run fill_static_tables.py to populate static data and metrics
+            echo "Step 2: Populating static data with fill_static_tables.py..."
+            if DB_LOCATION=$temp_db_location python3 fill_static_tables.py; then
+                echo "✓ Static data populated"
+            else
+                echo "✗ Static data population had errors, but continuing..."
+            fi
+            echo ""
+
+            echo "Migration complete. Re-validating schema..."
+            echo ""
+            # Loop will re-validate automatically
+            continue
+        fi
+    fi
+
+    # Migration not attempted or failed - ask if want to continue anyway
+    echo ""
+    echo "Do you want to use the incompatible database anyway? (y/n)"
+    read -r answer
+    if [[ "$answer" != "y" ]]; then
+        echo "Aborting. Keeping existing database, removing incompatible download."
+        rm -f $temp_db_location
+        exit 1
+    fi
+    echo "Continuing despite schema incompatibility..."
+    schema_valid=true  # Exit loop
+done
+
+echo ""
+if [[ "$migration_attempted" = true ]]; then
+    echo "✓ Schema migration successful. Using migrated database."
+else
+    echo "✓ Schema validation passed. Using downloaded database."
+fi
+mv $temp_db_location $local_db_location
 
 # Ask if need to edit the database
 echo "Do you need to correct/edit records in the DB? (y/n)"
