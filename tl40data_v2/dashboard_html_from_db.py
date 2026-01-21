@@ -73,7 +73,7 @@ quips = [
         '"Did you run out of Pokéballs?"',
         '"Good work Trainer!"',
         '"Wait till I tell Professor Oak!"',
-#        '""',
+        '"Un-bayleef-able achievement!"',
 #        '""',
 #        '""',
 #        '""',
