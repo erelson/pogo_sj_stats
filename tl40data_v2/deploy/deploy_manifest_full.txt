@@ -1,0 +1,25 @@
+# Files to deploy to the server
+# Used by deploy_code.bash
+
+# Python application files
+app.py
+tables.py
+settings.py
+age_survey.py
+
+# Configuration files
+stats.json
+stat_help.json
+
+# Templates
+templates/survey_template.html
+templates/trainer_visualization.html
+templates/debug_thresholds.html
+templates/age_survey.html
+templates/_formhelpers.html
+templates/graph.html
+
+# Static files (excluding icons which are managed separately)
+static/style.css
+static/scroll2.js
+static/index.html
