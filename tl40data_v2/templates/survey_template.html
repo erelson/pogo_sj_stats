@@ -2,6 +2,21 @@
 <html>
   <head>
     <title>Survey page</title>
+    <style>
+      .warning-highlight {
+        background-color: #fff3cd;
+        border: 2px solid #ffc107 !important;
+        border-radius: 4px;
+      }
+      .warning-message {
+        color: #856404;
+        background-color: #fff3cd;
+        padding: 4px 8px;
+        margin-top: 4px;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+    </style>
   </head>
   <body>
 {% from "_formhelpers.html" import render_field %}
@@ -102,7 +117,8 @@
                     statName: statName,
                     previousValue: previousValue,
                     currentValue: currentValue,
-                    increase: increment
+                    increase: increment,
+                    inputElement: input
                 });
             }
         });
@@ -127,6 +143,39 @@
         return confirm(message);
     }
 
+    function clearWarningHighlights() {
+        // Remove all existing warning highlights
+        document.querySelectorAll('.warning-highlight').forEach(el => {
+            el.classList.remove('warning-highlight');
+        });
+        document.querySelectorAll('.warning-message').forEach(el => {
+            el.remove();
+        });
+    }
+
+    function highlightWarnings(warnings) {
+        clearWarningHighlights();
+
+        warnings.forEach(w => {
+            const input = w.inputElement;
+            if (input) {
+                // Add highlight class to the input
+                input.classList.add('warning-highlight');
+
+                // Add warning message after the input
+                const warningMsg = document.createElement('div');
+                warningMsg.className = 'warning-message';
+                warningMsg.textContent = '⚠️ Large increase: ' + w.previousValue + ' → ' + w.currentValue + ' (+' + w.increase + ')';
+                input.parentNode.insertBefore(warningMsg, input.nextSibling);
+            }
+        });
+
+        // Scroll to the first warning
+        if (warnings.length > 0 && warnings[0].inputElement) {
+            warnings[0].inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
     // Intercept form submission to check for warnings
     const surveyForm = document.querySelector('form');
 
@@ -140,6 +189,9 @@
         if (this.dataset.warningsConfirmed === 'true') {
             return;
         }
+
+        // Clear any previous warning highlights
+        clearWarningHighlights();
 
         // Check for warnings
         const warnings = checkForWarnings();
@@ -155,8 +207,10 @@
                 // User clicked OK - mark as confirmed and resubmit
                 this.dataset.warningsConfirmed = 'true';
                 this.submit();
+            } else {
+                // User clicked Cancel - stay on form to edit, and highlight the problematic fields
+                highlightWarnings(warnings);
             }
-            // Otherwise user clicked Cancel - stay on form to edit
         }
     });
   </script>

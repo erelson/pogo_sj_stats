@@ -224,7 +224,7 @@ def get_survey_data_in_survey_order(session, user=None):
 
 
 def print_incomplete_warning():
-    # Return text (HTML) that will be displayed above the Submit button
+    # Return text (HTML) that will be displayed at beginning and above the Submit button
     return "<p><b>There are one or more empty required fields, or errors to correct.</b>"
 
 class RegistrationForm(Form):
