@@ -247,7 +247,7 @@ class PogoStatsForm(Form):
     pass
 
 
-def survey_gen(stats_list, formclass, _test_default_val=None, trainer_metrics=None):
+def survey_gen(stats_list, formclass, trainer_metrics=None, prefill=False):
     """Sets survey fields as attrs on form object
 
     Also inserts sectional breaks.
@@ -258,10 +258,11 @@ def survey_gen(stats_list, formclass, _test_default_val=None, trainer_metrics=No
         stats_list: list of Stat objects. Each list will drive a input field on the form.
             The order of the list determines the order of the fields on the form.
         formclass: Class of a form object.
-        _test_default_val: Default value for all fields. Normally set by
             test code.
         trainer_metrics: Dict of stat_name -> warning_threshold for personalized validation.
             Defaults to None (no personalized thresholds).
+        prefill: If True, pre-fill all fields with their previous values instead of
+            just showing them as placeholders. Useful for testing.
 
     Returns:
         A formclass with attributes set, ready to be instantiated.
@@ -305,11 +306,14 @@ def survey_gen(stats_list, formclass, _test_default_val=None, trainer_metrics=No
         checks = [validators.NumberRange(min=minimum,
                                          max=stat.maximum if stat.maximum > 0 else None)
                      ]
-        default_val = _test_default_val
-        if previous_val == stat.maximum:  # Note there are no stats with maximums that are also float values.
+        default_val = None
+        if prefill:
+            # Pre-fill all fields with their previous values (for testing)
+            default_val = previous_val
+        elif previous_val == stat.maximum:  # Note there are no stats with maximums that are also float values.
             # Fill in the field for already-maxed stats.
             default_val = previous_val
-        elif stat.required == 0:
+        if stat.required == 0:
             checks = [validators.Optional()] + checks
         # Get personalized warning threshold for this stat (if available)
         warning_threshold = trainer_metrics.get(stat.name, 0)
@@ -483,7 +487,10 @@ def fill_survey(user=None):
         for stat_entry in stats_list:
             stat_entry[3] = 0  # warning_factor is at index 3
 
-    PogoForm = survey_gen(stats_list, PogoStatsForm, trainer_metrics=trainer_metrics)
+    # Check for prefill/test URL parameter (e.g., /survey/username?prefill or ?test)
+    prefill = 'prefill' in request.args or 'test' in request.args
+
+    PogoForm = survey_gen(stats_list, PogoStatsForm, trainer_metrics=trainer_metrics, prefill=prefill)
     try:
         form = PogoForm(request.form)
         real_function_call = True  # TODO cleanup
