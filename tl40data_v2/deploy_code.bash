@@ -20,9 +20,9 @@ echo ""
 read -r -p "Enter choice [1]: " choice
 
 case "$choice" in
-    2) manifest="deployment/deploy_manifest_age_survey.txt" ;;
-    3) manifest="deployment/deploy_manifest_full.txt" ;;
-    *) manifest="deployment/deploy_manifest_main_survey.txt" ;;
+    2) manifest="deploy/deploy_manifest_age_survey.txt" ;;
+    3) manifest="deploy/deploy_manifest_full.txt" ;;
+    *) manifest="deploy/deploy_manifest_main_survey.txt" ;;
 esac
 
 echo ""
