@@ -1,8 +1,9 @@
 dominate
 flask
 flask_wtf
-thefuzz
+matplotlib
 sqlalchemy
 sqlitebrowser
+thefuzz
 toml
 wtforms

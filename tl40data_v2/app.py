@@ -15,9 +15,9 @@ from flask import render_template
 from wtforms import Form, BooleanField, DecimalField, StringField, IntegerField, \
                     PasswordField, validators
 from flask_wtf import FlaskForm
-import matplotlib
-matplotlib.use("svg")  # Set the backend to SVG
-import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use("svg")  # Set the backend to SVG
+#import matplotlib.pyplot as plt
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import OperationalError
