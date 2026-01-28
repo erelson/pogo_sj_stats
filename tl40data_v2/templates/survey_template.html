@@ -16,6 +16,75 @@
         border-radius: 4px;
         font-size: 0.9em;
       }
+      /* Warning modal styles */
+      .warning-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .warning-modal {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+      .warning-modal h3 {
+        margin-top: 0;
+        color: #856404;
+      }
+      .warning-modal-stats {
+        background: #fff3cd;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 15px 0;
+        font-family: monospace;
+        white-space: pre-line;
+      }
+      .warning-modal-note {
+        font-size: 0.9em;
+        color: #666;
+        margin-top: 15px;
+        font-style: italic;
+      }
+      .warning-modal-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: flex-end;
+      }
+      .warning-modal-buttons button {
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .btn-review {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        font-weight: bold;
+      }
+      .btn-review:hover {
+        background-color: #0056b3;
+      }
+      .btn-submit-anyway {
+        background-color: #f8f9fa;
+        color: #333;
+        border: 1px solid #ccc;
+      }
+      .btn-submit-anyway:hover {
+        background-color: #e9ecef;
+      }
     </style>
   </head>
   <body>
@@ -127,20 +196,62 @@
     }
 
     function showWarningDialog(warnings) {
-        // Build plain text message for confirm dialog
-        const count = warnings.length;
-        const statWord = count === 1 ? "stat seems" : "stats seem";
-        let message = "⚠️ WARNING: The following " + count + " " + statWord + " unusually high:\n\n";
-        message += "Click OK to submit anyway\nClick Cancel to go back and edit\n\n";
+        return new Promise((resolve) => {
+            const count = warnings.length;
+            const statWord = count === 1 ? "stat seems" : "stats seem";
 
-        warnings.forEach(w => {
-            message += w.statName + "\n";
-            message += "  Previous: " + w.previousValue + "\n";
-            message += "  Entered:  " + w.currentValue + "\n";
-            message += "  Increase: +" + w.increase + "\n\n";
+            // Build stats detail text
+            let statsText = "";
+            warnings.forEach(w => {
+                statsText += w.statName + "\n";
+                statsText += "  Previous: " + w.previousValue + "\n";
+                statsText += "  Entered:  " + w.currentValue + "\n";
+                statsText += "  Increase: +" + w.increase + "\n\n";
+            });
+
+            // Create modal HTML
+            const overlay = document.createElement('div');
+            overlay.className = 'warning-modal-overlay';
+            overlay.innerHTML = `
+                <div class="warning-modal">
+                    <h3>⚠️ Warning: ${count} ${statWord} unusually high</h3>
+                    <p>Click <strong>"Review submission"</strong> to go back and check your entries.</p>
+                    <p>Click <strong>"Submit; above is right"</strong> if the values are correct.</p>
+                    <div class="warning-modal-stats">${statsText}</div>
+                    <p class="warning-modal-note">These checks will be re-done when you click "Submit stats" again.</p>
+                    <div class="warning-modal-buttons">
+                        <button class="btn-submit-anyway" type="button">Submit; above is right</button>
+                        <button class="btn-review" type="button">Review submission</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            // Focus the review button (primary action)
+            const reviewBtn = overlay.querySelector('.btn-review');
+            const submitBtn = overlay.querySelector('.btn-submit-anyway');
+            reviewBtn.focus();
+
+            // Handle button clicks
+            reviewBtn.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+                resolve(false);  // Don't submit, go back to review
+            });
+
+            submitBtn.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+                resolve(true);  // Submit anyway
+            });
+
+            // Handle Escape key (same as Review)
+            overlay.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.body.removeChild(overlay);
+                    resolve(false);
+                }
+            });
         });
-
-        return confirm(message);
     }
 
     function clearWarningHighlights() {
@@ -200,17 +311,18 @@
             // Prevent submission
             event.preventDefault();
 
-            // Show warning dialog
-            const userConfirmed = showWarningDialog(warnings);
-
-            if (userConfirmed) {
-                // User clicked OK - mark as confirmed and resubmit
-                this.dataset.warningsConfirmed = 'true';
-                this.submit();
-            } else {
-                // User clicked Cancel - stay on form to edit, and highlight the problematic fields
-                highlightWarnings(warnings);
-            }
+            // Show warning dialog (returns a Promise)
+            const form = this;
+            showWarningDialog(warnings).then(userConfirmed => {
+                if (userConfirmed) {
+                    // User clicked "Submit; above is right" - mark as confirmed and resubmit
+                    form.dataset.warningsConfirmed = 'true';
+                    form.submit();
+                } else {
+                    // User clicked "Review submission" - highlight the problematic fields
+                    highlightWarnings(warnings);
+                }
+            });
         }
     });
   </script>
