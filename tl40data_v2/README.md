@@ -86,3 +86,36 @@ As an example: with the new pokédex UI in early 2025, the 3* dexes were removed
 1. To remove it from the leaderboards, remove it from `report_fields_1.json`
 1. To remove dex counts from the "Sum of All Dex Counts", modify `DEX_NAMES` in
    `dashboard_html_from_db.py`.
+
+## Updating code on the server
+
+When making changes locally, the below files need to be copied to the server:
+
+### Python Application Files
+- `app.py` - Main Flask application
+- `tables.py` - SQLAlchemy database models
+- `settings.py` - Configuration (paths, database location)
+- `age_survey.py` - Age survey routes and plotting
+
+### Configuration Files
+- `stats.json` - Survey field definitions, medal thresholds, limits
+- `stat_help.json` - Help text for survey fields
+
+### Templates (`templates/` directory)
+- `survey_template.html` - Main survey form
+- `trainer_visualization.html` - Trainer stats visualization page
+- `debug_thresholds.html` - Debug view for warning thresholds
+- `age_survey.html` - Age survey form
+- `_formhelpers.html` - WTForms rendering macros
+- `graph.html` - Graph display template
+
+### Static Files (`static/` directory)
+- `style.css` - Main stylesheet
+- `scroll2.js` - Sticky header and month selector JavaScript
+- `index.html` - Root static page
+
+**Note:** Icons (PNG files in `static/`) are managed separately and are not version controlled.
+
+### Automation
+- The deploy folder contains manifests for the above categories
+- The deploy_code.bash script prompts which upload manifest to use
