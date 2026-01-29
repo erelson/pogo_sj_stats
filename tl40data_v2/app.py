@@ -5,11 +5,14 @@
 # Standard library
 import argparse
 import json
+import os
+import subprocess
 import sys
 from datetime import datetime
+from functools import wraps
 
 # Third party
-from flask import request, flash, redirect, url_for, send_from_directory, jsonify
+from flask import request, flash, redirect, url_for, send_from_directory, jsonify, send_file
 from flask import Flask
 from flask import render_template
 from wtforms import Form, BooleanField, DecimalField, StringField, IntegerField, \
@@ -52,6 +55,20 @@ TYPE_MEDALS = ["Schoolkid",  # This list's fields get put at the very end of the
               ]
 
 app = Flask(__name__)
+
+# Admin authentication
+ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', None)
+
+
+def require_admin_token(f):
+    """Decorator to require valid admin token for route access."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.args.get('token') or request.headers.get('Authorization', '').replace('Bearer ', '')
+        if not ADMIN_TOKEN or token != ADMIN_TOKEN:
+            return 'Unauthorized', 401
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 def calculate_months_since_survey(days_since_last_survey):
@@ -813,6 +830,95 @@ def get_trainer_stats():
         return jsonify({'error': str(e)}), 500
     finally:
         session.close()
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+@require_admin_token
+def admin_dashboard():
+    """
+    Admin dashboard for server operations.
+    Requires valid ADMIN_TOKEN via query parameter or Authorization header.
+    """
+    result = None
+    error = None
+
+    # Get recent submissions for display
+    recent_submissions = []
+    try:
+        session = Session(engine, autoflush=True)
+        # Query last 20 responses with trainer info
+        responses = session.query(Response, Trainer).join(
+            Trainer, Response.trainer_id == Trainer.id
+        ).order_by(Response.timestamp.desc()).limit(20).all()
+
+        for response, trainer in responses:
+            response_dt = datetime.fromtimestamp(float(response.timestamp))
+            recent_submissions.append({
+                'trainer_name': trainer.proper_name or trainer.name,
+                'timestamp': response_dt.strftime('%Y-%m-%d %H:%M'),
+                'id': response.id
+            })
+        session.close()
+    except Exception as e:
+        print(f"Error loading recent submissions: {e}", file=sys.stderr)
+
+    # Handle POST actions
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'regenerate':
+            try:
+                # Run dashboard generation script
+                proc = subprocess.run(
+                    [sys.executable, 'dashboard_html_from_db.py'],
+                    capture_output=True,
+                    text=True,
+                    timeout=120  # 2 minute timeout
+                )
+                result = {
+                    'success': proc.returncode == 0,
+                    'stdout': proc.stdout,
+                    'stderr': proc.stderr,
+                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }
+            except subprocess.TimeoutExpired:
+                error = "Generation timed out after 2 minutes"
+            except Exception as e:
+                error = str(e)
+
+    return render_template('admin.html',
+                          result=result,
+                          error=error,
+                          token=request.args.get('token', ''),
+                          recent_submissions=recent_submissions)
+
+
+@app.route('/admin/backup')
+@require_admin_token
+def admin_backup():
+    """
+    Download database backup.
+    Requires valid ADMIN_TOKEN via query parameter or Authorization header.
+    """
+    try:
+        # Get database path from settings
+        from settings import LOCAL_DB_DIR, LOCAL_DB_FILENAME
+        db_path = os.path.join(LOCAL_DB_DIR, LOCAL_DB_FILENAME)
+
+        if not os.path.exists(db_path):
+            return 'Database file not found', 404
+
+        # Generate timestamped filename
+        timestamp = datetime.now().strftime('%Y-%m-%d')
+        download_name = f'pogo_sj_backup_{timestamp}.db'
+
+        return send_file(
+            db_path,
+            as_attachment=True,
+            download_name=download_name
+        )
+    except Exception as e:
+        print(f"Error creating backup: {e}", file=sys.stderr)
+        return f'Error creating backup: {e}', 500
 
 
 #@app.route('/test_survey/', methods=['GET', 'POST'])

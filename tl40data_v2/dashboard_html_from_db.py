@@ -24,9 +24,9 @@ from tables import Stat, Response, Trainer
 from settings import LOCAL_DB_SPECIFIER
 
 
-# TODO these should be pulled from DB
-report_fields_path = "../report_fields_1.json"
-platinum_counts_path = "../platinum_counts.json"
+# We originally intended to pull these from DB, but using files is working fine so far
+report_fields_path = "report_fields_1.json"
+platinum_counts_path = "platinum_counts.json"
 
 DAY_TO_INT = dict(zip(calendar.day_name, range(7)))
 SURVEY_LINK = "http://pogo.gertlex.com/survey"

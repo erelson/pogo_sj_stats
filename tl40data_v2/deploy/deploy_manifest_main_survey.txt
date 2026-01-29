@@ -3,16 +3,20 @@
 
 # Python application files
 app.py
+dashboard_html_from_db.py
 tables.py
 settings.py
 
 # Configuration files
+platinum_counts.json
+report_fields_1.json
 stats.json
 stat_help.json
 
 # Templates
 templates/survey_template.html
 templates/_formhelpers.html
+templates/admin.html
 
 # Static files (excluding icons which are managed separately)
 static/style.css
