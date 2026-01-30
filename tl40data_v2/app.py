@@ -868,11 +868,13 @@ def admin_dashboard():
         if action == 'regenerate':
             try:
                 # Run dashboard generation script
+                script_dir = os.path.dirname(os.path.abspath(__file__))
                 proc = subprocess.run(
-                    [sys.executable, 'dashboard_html_from_db.py'],
+                    [sys.executable, 'dashboard_html_from_db.py', '--output-dir', 'static'],
                     capture_output=True,
                     text=True,
-                    timeout=120  # 2 minute timeout
+                    timeout=120,  # 2 minute timeout
+                    cwd=script_dir
                 )
                 result = {
                     'success': proc.returncode == 0,

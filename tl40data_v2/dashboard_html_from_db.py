@@ -595,7 +595,9 @@ def load_entries_from_db():
 
 
 def main(args):
-    # ...
+    output_dir = args.output_dir
+    os.makedirs(output_dir, exist_ok=True)
+
     with open(report_fields_path, 'r') as fr:
         report_fields_dict = json.load(fr)  # expect a list of strings matching field keys
     report_fields = list(report_fields_dict.keys())
@@ -657,17 +659,17 @@ def main(args):
 
         date_string = str(newmonthdate).rsplit("-", maxsplit=1)[0]
         print("Generated page for", date_string, f"({player_count} returning trainers)")
-        with open(f"html/{date_string}.html", 'w') as fr:
+        with open(f"{output_dir}/{date_string}.html", 'w') as fr:
             fr.write(str(doc))
 
-        if n == 0:  # copy first generated page to be our 'html/index.html'
+        if n == 0:  # copy first generated page to be our 'index.html'
             try:
-                shutil.copy(f"html/{date_string}.html", "html/index.html")
-                print("Copied most recent month to 'html/index.html'")
+                shutil.copy(f"{output_dir}/{date_string}.html", f"{output_dir}/index.html")
+                print(f"Copied most recent month to '{output_dir}/index.html'")
             except shutil.SameFileError:
                 pass
             except PermissionError:
-                print("Weird. A permission error when copying to 'html/index.html'...")
+                print(f"Weird. A permission error when copying to '{output_dir}/index.html'...")
             except Exception as e:
                 print("an unexpected Exception occurred that I was too lazy to predict...")
                 raise
@@ -676,6 +678,8 @@ def main(args):
 if __name__ == "__main__":
     parser = ArgumentParser(description="Load/process the sqlite3 database, "
                                         "and generate HTML stat pages for past several months.")
+    parser.add_argument("--output-dir", default="html",
+                        help="Directory to write generated HTML files (default: html)")
     #parser.add_argument("file", default="pogo_sj_stats_oct2021.csv",
     #                    help="CSV file from google sheets, containing entire history of form responses")
     args = parser.parse_args()
