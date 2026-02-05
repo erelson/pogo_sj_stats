@@ -25,4 +25,3 @@ templates/graph.html
 # Static files (excluding icons which are managed separately)
 static/style.css
 static/scroll2.js
-static/index.html
