@@ -6,4 +6,5 @@ __pycache__*
 *.Identifier
 
 config.toml
+settings.json
 upload_list.txt
