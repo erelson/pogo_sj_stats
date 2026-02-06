@@ -1,8 +1,13 @@
 # A survey and leaderboard site for local Pokémon Go communities
 
-This is a replacement for the old tl40 surveys that stopped at the end of 2022 or so.
+This is a replacement for the old tl40 surveys and leaderboards that stopped at the end of 2022 or so.
 
-It also improves the UX in various ways (particularly, per-trainer ordering of medals by platinum/gold/silver/bronze/none level).
+It also improves the survey UX in various ways:
+
+- per-trainer ordering of medals by platinum/gold/silver/bronze/none level
+- limits on stats that match the game
+- typo-protection via warnings for large stat increases
+- several minor details improved on to reduce user errors
 
 
 # Tech stack:
@@ -17,11 +22,11 @@ The hosting site provides an apache2 server.
 
 The flask app (`app.py`) is run as a daemon process.
 
-The flask app is what you see on the website, via a reverse proxy to port 80. (HTTPS/port 443 forthcoming some day)
+The flask app is what you see on the website, via a reverse proxy to port 80. HTTPS was added by the hosting provider in 2024.
 
 The sqlite3 database file lives in a directory on the hosting site (controlled by `settings.py`).
 
-I download the DB from the server, generate stats locally, and push the generated HTML back to the server.
+I download the DB from the server, generate stats locally, and push the generated HTML back to the server. Later, I added an admin interface to do this remotely.
 
 Icons used in the survey and leaderboards are uploaded to the server in appropriate directories. They are not part of the git repo, however.
 
@@ -119,3 +124,15 @@ When making changes locally, the below files need to be copied to the server:
 ### Automation
 - The deploy folder contains manifests for the above categories
 - The deploy_code.bash script prompts which upload manifest to use
+
+## Past notes
+
+Originally, there was the Trainer Level 40 club, for tracking stats for those who had maxed out
+the original Level 40 limit in Pokemon go.  This group ran a survey form, and mailed regional spreadsheet leaderboards.
+
+They briefly tried to join with another website to make fancier per-user stat listings, but shut this down due to misuse.
+
+I implemented a google form to collect the various medals' information, and parsed the submissions to
+this form to make the leaderboards.
+
+Later, I added my own survey page and sqlite database. It's been well received as easier to use.

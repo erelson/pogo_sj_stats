@@ -418,30 +418,30 @@ def stats():
 
 
 # TODO not implemented
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    print()
-    print("DEBUG")
-    form = RegistrationForm(request.form)
-    #print(type(form.username), form.username)
-    print(dir(request))
-    if hasattr(request, "data"):
-        print(request.data)
-    if hasattr(request, "values"):
-        print(request.values)
-    if request.method == 'POST' and form.validate():
-        #user = User(form.username.data, form.email.data,
-        #            form.password.data)
-        #db_session.add(user)
-        print(form)
-        print(dir(form))
-        print("skipped db_session.add call")
-        flash('Thanks for registering')
-
-        return redirect(url_for('login'))
-    return render_template('register.html', form=form,
-                           zip=zip, type=type, print=print,
-                           )
+#@app.route('/register', methods=['GET', 'POST'])
+#def register():
+#    print()
+#    print("DEBUG")
+#    form = RegistrationForm(request.form)
+#    #print(type(form.username), form.username)
+#    print(dir(request))
+#    if hasattr(request, "data"):
+#        print(request.data)
+#    if hasattr(request, "values"):
+#        print(request.values)
+#    if request.method == 'POST' and form.validate():
+#        #user = User(form.username.data, form.email.data,
+#        #            form.password.data)
+#        #db_session.add(user)
+#        print(form)
+#        print(dir(form))
+#        print("skipped db_session.add call")
+#        flash('Thanks for registering')
+#
+#        return redirect(url_for('login'))
+#    return render_template('register.html', form=form,
+#                           zip=zip, type=type, print=print,
+#                           )
 
 @app.route('/survey/<username>', methods=['GET', 'POST'])
 def fill_survey_for_user(username=None):
