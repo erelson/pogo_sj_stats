@@ -6,8 +6,10 @@
 import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
+import threading
 from datetime import datetime
 from functools import wraps
 
@@ -865,7 +867,19 @@ def admin_dashboard():
     # Handle POST actions
     if request.method == 'POST':
         action = request.form.get('action')
-        if action == 'regenerate':
+        if action == 'restart':
+            # Send response first, then exit after a short delay
+            def delayed_exit():
+                import time
+                time.sleep(1)
+                os.kill(os.getpid(), signal.SIGINT)
+            threading.Thread(target=delayed_exit, daemon=True).start()
+            return render_template('admin.html',
+                                  result={'success': True, 'stdout': 'Server is shutting down...', 'stderr': '', 'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')},
+                                  error=None,
+                                  token=request.args.get('token', ''),
+                                  recent_submissions=recent_submissions)
+        elif action == 'regenerate':
             try:
                 # Run dashboard generation script
                 script_dir = os.path.dirname(os.path.abspath(__file__))

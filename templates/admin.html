@@ -55,6 +55,13 @@
         .btn-secondary:active {
             background-color: #0b7dda;
         }
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        .btn-danger:active {
+            background-color: #c62828;
+        }
         .result-box {
             padding: 15px;
             margin: 15px 0;
@@ -139,6 +146,11 @@
             <a href="/admin/backup?token={{ token }}" class="btn btn-secondary">
                 Download Database Backup
             </a>
+            <form method="POST" action="/admin?token={{ token }}" onsubmit="return confirm('Are you sure you want to restart the server?');">
+                <button class="btn btn-danger" type="submit" name="action" value="restart">
+                    Restart Server
+                </button>
+            </form>
         </div>
 
         {% if error %}
