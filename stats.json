@@ -19,17 +19,17 @@
     "Trainer Level":
       ["Integer",0,0,0,0,80,true,1,"trainer_level","General",0],
     "Pokédex: Total":
-      ["Integer",0,0,0,0,940,true,1,"pokedex_caught","Pokédex",0],
+      ["Integer",0,0,0,0,943,true,1,"pokedex_caught","Pokédex",0],
     "Pokédex: Shiny":
-      ["Integer",0,0,0,0,871,true,1,"pokedex_shiny","Pokédex",0],
+      ["Integer",0,0,0,0,876,true,1,"pokedex_shiny","Pokédex",0],
     "Pokédex: Lucky":
-      ["Integer",0,0,0,0,923,true,1,"pokedex_lucky","Pokédex",0],
+      ["Integer",0,0,0,0,926,true,1,"pokedex_lucky","Pokédex",0],
     "Pokédex: XXL":
-      ["Integer",0,0,0,0,940,true,1,"pokedex_xxl","Pokédex",0],
+      ["Integer",0,0,0,0,943,true,1,"pokedex_xxl","Pokédex",0],
     "Pokédex: XXS":
-      ["Integer",0,0,0,0,940,true,1,"pokedex_xxs","Pokédex",0],
+      ["Integer",0,0,0,0,943,true,1,"pokedex_xxs","Pokédex",0],
     "Pokédex: G-Max":
-      ["Integer",0,0,0,0,16,true,1,"pokedex_gmax","Pokédex",0],
+      ["Integer",0,0,0,0,17,true,1,"pokedex_gmax","Pokédex",0],
     "Pokédex: Mega":
       ["Integer",0,0,0,0,51,true,1,"pokedex_mega","Pokédex",0],
     "Pokédex: Shadow":
@@ -37,17 +37,17 @@
     "Pokédex: Purified":
       ["Integer",0,0,0,0,436,true,1,"pokedex_purified","Pokédex",0],
     "Pokédex: ★ 100%":
-      ["Integer",0,0,0,0,940,true,1,"pokedex_4star","Pokédex",0],
+      ["Integer",0,0,0,0,943,true,1,"pokedex_4star","Pokédex",0],
     "Unique Species Seen":
-      ["Integer",0,0,0,0,940,true,-1,"pokedex_seen","Pokédex",0],
+      ["Integer",0,0,0,0,943,true,-1,"pokedex_seen","Pokédex",0],
     "Unknown Generation":
       ["Integer",0,0,0,0,2,true,-1,"pokedex_entries_unknown","Pokédex",0],
     "Pokédex: 3 Stars":
-      ["Integer",0,0,0,0,940,true,-1,"pokedex_3star","Pokédex",0],
+      ["Integer",0,0,0,0,943,true,-1,"pokedex_3star","Pokédex",0],
     "Pokédex: Shiny 3 Stars":
-      ["Integer",0,0,0,0,871,true,-1,"pokedex_3star_shiny","Pokédex",0],
+      ["Integer",0,0,0,0,876,true,-1,"pokedex_3star_shiny","Pokédex",0],
     "Pokédex: Event/Costume":
-      ["Integer",0,0,0,0,285,true,-1,"pokedex_event","Pokédex",0],
+      ["Integer",0,0,0,0,287,true,-1,"pokedex_event","Pokédex",0],
     "Stardust":
       ["Integer",0,0,0,0,-1,false,0,"pokemon_info_stardust","General",0],
     "Go Battle League - Overall Wins":
@@ -137,7 +137,7 @@
     "Alola":
       ["Integer",5,25,50,86,78,true,1,"pokedex_entries_gen7","Regional",0],
     "Galar":
-      ["Integer",5,25,50,89,66,true,1,"pokedex_entries_gen8","Regional",0],
+      ["Integer",5,25,50,89,69,true,1,"pokedex_entries_gen8","Regional",0],
     "Triathlete":
       ["Integer",1,10,50,100,-1,true,1,"pokestreak","Medal",1],
     "Rising Star":
