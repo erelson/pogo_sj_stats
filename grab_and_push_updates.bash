@@ -99,7 +99,8 @@ if [[ "$answer" = "y" ]]; then
         echo "Which method do you want to use?"
         echo "1: fuzzy lookup of responses with db_editor.py"
         echo "2: manual hand-edit with sqlitebrowser"
-        read -r -p "Answer: " user_input 
+        echo "3: rename or merge a trainer with rename_trainer.py"
+        read -r -p "Answer: " user_input
         case "$user_input" in
             1)
                 python3 db_editor.py $local_db_location
@@ -107,6 +108,10 @@ if [[ "$answer" = "y" ]]; then
                 ;;
             2)
                 sqlitebrowser $local_db_location
+                break
+                ;;
+            3)
+                python3 rename_trainer.py $local_db_location
                 break
                 ;;
             *)
