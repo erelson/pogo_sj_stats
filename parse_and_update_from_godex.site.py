@@ -193,11 +193,11 @@ def write_prettyprint_json(stats):
         # data dictionary
         for val in list(stats["data"].keys())[:-1]:
             fw.write(f'    "{val}":\n')
-            sublist = json.dumps(stats["data"][val], separators=(',', ':'))
+            sublist = json.dumps(stats["data"][val], separators=(',', ':'), ensure_ascii=False)
             fw.write(f'      {sublist},\n')
         # last lines w/o commas
         last = list(stats["data"].keys())[-1]
-        last2 = json.dumps(stats["data"][last], separators=(',', ':'))
+        last2 = json.dumps(stats["data"][last], separators=(',', ':'), ensure_ascii=False)
         fw.write(f'    "{last}":\n')
         fw.write(f'      {last2}\n')
         fw.write('  }\n}\n')
