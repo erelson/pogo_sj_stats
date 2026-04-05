@@ -52,6 +52,7 @@ STATNAME_DEX_SUM = "Sum of All Dex Counts"
 
 # April fools quips on the leaderboards
 APRIL_FOOLS = False
+APRIL_FOOLS2 = False
 quips = [
         '"I\'m so proud!"',
         '"You tried."',
@@ -425,7 +426,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                         #    player_dex_sum_increment[player] -= N_TYPE_MEDALS
                         changedata.append((dex_sum,
                                            player_dex_sum_increment[player],
-                                           player,
+                                           player if not APRIL_FOOLS2 else "HELICOID",
                                            change,  # TODO month-averaged not implemented
                                            change
                                            ))
@@ -460,7 +461,7 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                 # list of tuples of: new val, ???, player, raw change, time averaged change
                 changedata = [(months_data[player][stat]["value"],
                                'null',  #months_data[player][stat]["change"],
-                               player,
+                               player if not APRIL_FOOLS2 else "HELICOID",
                                months_data[player][stat]["calculated_monthly_change"],
                                months_data[player][stat]["calculated_with_tdelta"]
                               )
@@ -520,7 +521,9 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                         th(f"{stat} — Total all time", colspan=3)
                         tr(td(b("Rank")), td(b("Player")), td(b(stat)))
                         [tr(td(cnt+1),
-                            td(item[0] + f"{item[1][1] if item[1][1] != month_year else ''}"),
+                            # Trainer (or Trainer (month year) for stale totals)
+                            (td(item[0] if not APRIL_FOOLS2 else "HELICOID") \
+                                    + f"{item[1][1] if item[1][1] != month_year else ''}"),
                             td(f"{item[1][0]:,}")
                            ) for cnt, item in enumerate(totals_data[:ranklength])]
 
@@ -595,6 +598,7 @@ def load_entries_from_db():
 
 
 def main(args):
+    os.umask(0o002)  # ensure new files are group-writable (-rw-rw-r--)
     output_dir = args.output_dir
     os.makedirs(output_dir, exist_ok=True)
 
@@ -664,12 +668,13 @@ def main(args):
 
         if n == 0:  # copy first generated page to be our 'index.html'
             try:
-                shutil.copy(f"{output_dir}/{date_string}.html", f"{output_dir}/index.html")
+                shutil.copyfile(f"{output_dir}/{date_string}.html", f"{output_dir}/index.html")
                 print(f"Copied most recent month to '{output_dir}/index.html'")
             except shutil.SameFileError:
                 pass
-            except PermissionError:
-                print(f"Weird. A permission error when copying to '{output_dir}/index.html'...")
+            except PermissionError as e:
+                print(f"Weird. A permission error when copying to '{output_dir}/index.html'...:")
+                print(e)
             except Exception as e:
                 print("an unexpected Exception occurred that I was too lazy to predict...")
                 raise
