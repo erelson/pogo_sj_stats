@@ -8,6 +8,14 @@ remote_db_location="/home/public/db/pogo_sj.db"
 # Grab database from server to temporary location
 echo "Grabbing current DB from server..."
 scp $login:$remote_db_location $temp_db_location
+scp_exit=$?
+
+# Verify download succeeded: non-zero exit code or empty/missing file means failure
+if [ $scp_exit -ne 0 ] || [ ! -s $temp_db_location ]; then
+    echo "ERROR: Download failed (scp exit code: $scp_exit). Local database unchanged."
+    rm -f $temp_db_location
+    exit 1
+fi
 
 if [ "$EXIT_AFTER_GRAB" = 'true' ]; then
     # Move temp to final location and exit
