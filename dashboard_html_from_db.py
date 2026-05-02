@@ -522,8 +522,9 @@ def render_monthly_html(entries, month_date=None, running_totals=None, player_pl
                         tr(td(b("Rank")), td(b("Player")), td(b(stat)))
                         [tr(td(cnt+1),
                             # Trainer (or Trainer (month year) for stale totals)
-                            (td(item[0] if not APRIL_FOOLS2 else "HELICOID") \
-                                    + f"{item[1][1] if item[1][1] != month_year else ''}"),
+                            (td(item[0] + f"{item[1][1] if item[1][1] != month_year else ''}" \
+                                    if not APRIL_FOOLS2 else "HELICOID") \
+                                    ),
                             td(f"{item[1][0]:,}")
                            ) for cnt, item in enumerate(totals_data[:ranklength])]
 
