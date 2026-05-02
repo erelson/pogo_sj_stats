@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env -S uv run
 
 """Paste the browser-visible content of godex.site, with my custom defined
 pokedexes to match in-game limits, into this script's prompt to auto-update

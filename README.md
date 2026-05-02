@@ -17,6 +17,36 @@ It also improves the survey UX in various ways:
 - WTForms
 - Sqlalchemy + Sqlite3
 
+## Local setup
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and [sqlitebrowser](https://sqlitebrowser.org/):
+
+```bash
+sudo apt install sqlitebrowser
+```
+
+Then install Python dependencies and initialize the local database:
+
+```bash
+uv sync
+uv run ./fill_static_tables.py
+```
+
+To run the Flask app locally for testing:
+
+```bash
+uv run python3 app.py fakekeytexthere
+```
+
+Then visit http://localhost:5000/survey.
+
+To work with a copy of the production database, download it first:
+
+```bash
+./grab_latest_db.bash
+```
+
+
 # Notes on hosting setup
 The hosting site provides an apache2 server.
 
@@ -32,7 +62,9 @@ Icons used in the survey and leaderboards are uploaded to the server in appropri
 
 ## Local testing
 
-Given a local db file (and optionally generated HTML files), you can do `python3 app.py fakekeytexthere` and visit http://localhost:5000/survey to test things. Note that icons are not included in this repo.
+Given a local db file (and optionally generated HTML files), you can do
+`python3 app.py fakekeytexthere` and visit http://localhost:5000/survey to test
+things. Note that icons are not included in this repo.
 
 # Maintenance playbooks
 

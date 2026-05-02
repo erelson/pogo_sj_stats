@@ -8,5 +8,6 @@ __pycache__*
 config.toml
 settings.json
 upload_list.txt
+uv.lock
 
 old

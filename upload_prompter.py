@@ -1,3 +1,7 @@
+#!/usr/bin/env -S uv run
+
+# Helper script for choosing what files to upload after generating leaderboards
+
 import datetime
 import sys
 try:

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run
 """
 validate_db_schema.py - Validate database schema compatibility
 

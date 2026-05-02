@@ -31,7 +31,7 @@ schema_valid=false
 migration_attempted=false
 
 while [[ "$schema_valid" = false ]]; do
-    if python3 validate_db_schema.py $temp_db_location; then
+    if ./validate_db_schema.py $temp_db_location; then
         schema_valid=true
         break
     fi
@@ -64,7 +64,7 @@ while [[ "$schema_valid" = false ]]; do
 
             # Run fill_static_tables.py to populate static data and metrics
             echo "Step 2: Populating static data with fill_static_tables.py..."
-            if DB_LOCATION=$temp_db_location python3 fill_static_tables.py; then
+            if DB_LOCATION=$temp_db_location ./fill_static_tables.py; then
                 echo "✓ Static data populated"
             else
                 echo "✗ Static data population had errors, but continuing..."
@@ -111,7 +111,7 @@ if [[ "$answer" = "y" ]]; then
         read -r -p "Answer: " user_input
         case "$user_input" in
             1)
-                python3 db_editor.py $local_db_location
+                ./db_editor.py $local_db_location
                 break
                 ;;
             2)
@@ -119,7 +119,7 @@ if [[ "$answer" = "y" ]]; then
                 break
                 ;;
             3)
-                python3 rename_trainer.py $local_db_location
+                ./rename_trainer.py $local_db_location
                 break
                 ;;
             *)
@@ -145,7 +145,7 @@ if [[ "$answer" != "y" ]]; then
 fi
 
 # Generate html
-python3 dashboard_html_from_db.py
+./dashboard_html_from_db.py
 
 # Ask if upload new html (and which)
 echo "Do you want to upload the latest generated HTML? (y/n)"
@@ -156,7 +156,7 @@ if [[ "$answer" != "y" ]]; then
 fi
 
 # Upload
-python3 upload_prompter.py
+./upload_prompter.py
 files=$(cat upload_list.txt)
 #echo scp $files $login:/home/public/static/
 scp $files $login:/home/public/static/

@@ -1,9 +1,9 @@
+alembic
 dominate
 flask
 flask_wtf
 matplotlib
 sqlalchemy
-sqlitebrowser
 thefuzz
 toml
 wtforms

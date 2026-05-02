@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env -S uv run
 
 # 3-1-2023: This can successfully add a Response to the db. It also
 # demonstrates that creation of the trainer works if the trainer didn't exist.

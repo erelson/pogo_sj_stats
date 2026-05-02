@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env -S uv run
 
 # Some assumptions:
 # - All dates listed on tl40 are MM/DD/YYYY regardless of locale, etc.
@@ -575,8 +575,9 @@ def load_entries_from_db():
     engine = create_engine(db_specifier)
     session = Session(engine)
 
-    # Get our user ID lookup from the DB
+    # Get our user ID lookup from the DB (exclude trainers who have opted out)
     users = session.query(Trainer).all()
+    excluded_ids = {user.id for user in users if user.excluded}
     users_lookup = {user.id: user.name for user in users}
 
     # Read all responses
@@ -584,6 +585,8 @@ def load_entries_from_db():
     for response in responses:
         user = users_lookup[response.trainer_id]
         if user == "test" or user == "*_-#test":
+            continue
+        if response.trainer_id in excluded_ids:
             continue
         if user not in entries:
             entries[user] = {}

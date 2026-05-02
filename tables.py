@@ -162,6 +162,7 @@ class Trainer(Base):
     #newest_response = Column(Response, nullable=True)  # Can't use a table class as a type
     newest_response = Column(Integer, nullable=True)
     newest_response_date = Column(String, nullable=True)  # Actually a timestamp... TODO refactor
+    excluded = Column(Boolean, nullable=True, default=False)  # If True, trainer is excluded from leaderboards
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

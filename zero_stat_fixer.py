@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env -S uv run
 
 # NOTE: adapted from copy of db_editor.py 3-2025
 

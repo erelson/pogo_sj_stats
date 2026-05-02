@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#!/usr/bin/env -S uv run
 
 # Use: Launch this from my generate-stats bash script.
 
@@ -115,21 +115,29 @@ class Editor():
                 print("Done for now")
                 return
             trainer_id = self.trainers_lookup[trainer]
-            self.get_survey(trainer_id)
+            trainer_obj = self.session.query(Trainer).filter(Trainer.id == trainer_id).first()
+            self.get_survey(trainer_obj)
 
-    def get_survey(self, trainer_id):
+    def get_survey(self, trainer_obj):
         """
         Args:
-            trainer_id (int): DB index of the selected trainer.
+            trainer_obj (Trainer): Trainer DB object.
         """
         while True:
             # List of [response_id, month/year] pairs for trainer_id
             trainer_surveys = [[response, data["month"]] for response, data in self.response_refs.items()
-                                if data["trainer_id"] == trainer_id]
+                                if data["trainer_id"] == trainer_obj.id]
             # choose from 10 most recent surveys for trainer, most recent first
-            survey = prompt_survey(trainer_surveys[-1:-11:-1])
+            excluded_status = "excluded" if trainer_obj.excluded else "not excluded"
+            survey = prompt_survey(trainer_surveys[-1:-11:-1], excluded_status)
             if not survey or survey == "abort":
                 return
+            if survey == "toggle_excluded":
+                trainer_obj.excluded = not bool(trainer_obj.excluded)
+                self.session.commit()
+                new_status = "excluded" if trainer_obj.excluded else "not excluded"
+                print(f"Trainer '{trainer_obj.name}' is now {new_status}.")
+                continue
             self.get_stat(survey)
 
     def get_stat(self, survey_id):
@@ -222,8 +230,9 @@ def confirm(prompt):
         ans = input(prompt).lower().strip()[0]
     return ans == 'y'
 
-def prompt_confirm_selection(options, vals=None, abort_info=""):
+def prompt_confirm_selection(options, vals=None, abort_info="", extra_commands=None):
     """
+    extra_commands: optional dict mapping single-char command to return value, e.g. {'x': 'toggle_excluded'}
     """
     if vals:
         assert(len(options) == len(vals))
@@ -238,6 +247,8 @@ def prompt_confirm_selection(options, vals=None, abort_info=""):
             continue
         elif sel[0] == 'q':
             return None
+        elif extra_commands and sel[0] in extra_commands:
+            return extra_commands[sel[0]]
         # Regular input
         try:
             sel = int(sel) - 1
@@ -252,11 +263,12 @@ def main(args):
     editor = Editor(args.db)
     editor.get_trainer()
 
-def prompt_survey(trainer_surveys):
+def prompt_survey(trainer_surveys, excluded_status):
     values, keys = zip(*trainer_surveys)
     print("\nSelect which survey to work with")
-    sel = prompt_confirm_selection(keys, values, abort_info="Choose a different trainer")
-    return sel
+    print(f"x: Toggle leaderboard exclusion (currently {excluded_status})")
+    return prompt_confirm_selection(keys, values, abort_info="Choose a different trainer",
+                                    extra_commands={'x': 'toggle_excluded'})
 
 def prompt_stat(stat_data):
     """
