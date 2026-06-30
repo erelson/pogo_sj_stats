@@ -205,7 +205,10 @@ def write_prettyprint_json(stats):
     print("Updated stats.json!")
 
 def print_current_diff():
-    run(shlex.split("git diff stats.json"))
+    try:
+        run(shlex.split("git --no-pager diff stats.json"))
+    except KeyboardInterrupt:
+        pass
 
 def main():
     print("Go to https://godex.site/ and log in (assumes you have dexes set up to match mappings at top of script)")
@@ -227,4 +230,9 @@ if __name__ == '__main__':
     parser = ArgumentParser(description=__doc__)
     # For now, argparse is just supporting --help output
     args = parser.parse_args()
-    main()
+    try:
+        main()
+    finally:
+        # Restore terminal echo/cooked mode in case anything (e.g. a pager)
+        # left it disabled. Unlike `reset`, `stty sane` preserves scrollback.
+        run(shlex.split("stty sane"))

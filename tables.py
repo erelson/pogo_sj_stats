@@ -490,7 +490,7 @@ class Response(Base):
 
 
 def main():
-    """ Get command line args, and call the function that fill the static tables.
+    """Get command line args, and call the function that fill the static tables.
     """
     parser = ArgumentParser("Fill in non-user-submitted data to a db")
     args = parser.parse_args()
