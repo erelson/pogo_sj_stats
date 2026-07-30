@@ -21,7 +21,7 @@
     "Pokédex: Total":
       ["Integer",0,0,0,0,951,true,1,"pokedex_caught","Pokédex",0],
     "Pokédex: Shiny":
-      ["Integer",0,0,0,0,881,true,1,"pokedex_shiny","Pokédex",0],
+      ["Integer",0,0,0,0,885,true,1,"pokedex_shiny","Pokédex",0],
     "Pokédex: Lucky":
       ["Integer",0,0,0,0,933,true,1,"pokedex_lucky","Pokédex",0],
     "Pokédex: XXL":
@@ -31,7 +31,7 @@
     "Pokédex: G-Max":
       ["Integer",0,0,0,0,18,true,1,"pokedex_gmax","Pokédex",0],
     "Pokédex: Mega":
-      ["Integer",0,0,0,0,55,true,1,"pokedex_mega","Pokédex",0],
+      ["Integer",0,0,0,0,57,true,1,"pokedex_mega","Pokédex",0],
     "Pokédex: Shadow":
       ["Integer",0,0,0,0,458,true,1,"pokedex_shadow","Pokédex",0],
     "Pokédex: Purified":
@@ -45,9 +45,9 @@
     "Pokédex: 3 Stars":
       ["Integer",0,0,0,0,951,true,-1,"pokedex_3star","Pokédex",0],
     "Pokédex: Shiny 3 Stars":
-      ["Integer",0,0,0,0,881,true,-1,"pokedex_3star_shiny","Pokédex",0],
+      ["Integer",0,0,0,0,885,true,-1,"pokedex_3star_shiny","Pokédex",0],
     "Pokédex: Event/Costume":
-      ["Integer",0,0,0,0,300,true,-1,"pokedex_event","Pokédex",0],
+      ["Integer",0,0,0,0,302,true,-1,"pokedex_event","Pokédex",0],
     "Stardust":
       ["Integer",0,0,0,0,-1,false,0,"pokemon_info_stardust","General",0],
     "Go Battle League - Overall Wins":
@@ -151,7 +151,7 @@
     "Successor":
       ["Integer",1,50,500,1000,-1,true,1,"mega_evolves","Medal",1],
     "Mega/Primal Evolution Guru":
-      ["Integer",1,24,36,46,55,true,1,"pokedex_entries_mega_dex","Medal",0],
+      ["Integer",1,24,36,46,57,true,1,"pokedex_entries_mega_dex","Medal",0],
     "Friend Finder":
       ["Integer",1,10,20,50,-1,true,0,"referral","Social",0],
     "Raid Expert":
