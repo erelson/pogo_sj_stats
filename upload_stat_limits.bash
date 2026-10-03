@@ -36,3 +36,6 @@ fi
 # Upload
 scp stats.json $login:/home/public/stats.json
 echo "All done!"
+
+echo "Check that the survey page still loads..."
+echo "https://pogo.gertlex.com/survey"

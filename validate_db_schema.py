@@ -42,7 +42,7 @@ def validate_schema(db_path=None, verbose=False):
             db_display = db_path
         else:
             db_specifier = LOCAL_DB_SPECIFIER
-            db_display = "default database (pogo_sj.db)"
+            db_display = f"default database ({LOCAL_DB_SPECIFIER})"
 
         engine = create_engine(db_specifier)
         inspector = inspect(engine)

@@ -49,7 +49,10 @@ Claude code agents should NEVER try to run or copy the code within `deploy_code.
 ### Key Configuration Files
 - `stats.json`: Complete survey field definitions (name, type, medal thresholds, limits, icons)
 - `report_fields_1.json`: Subset of stats to include in leaderboard reports
-- `settings.py`: Database connection and file path configuration
+- `settings.py`: Database connection and file path configuration. Defaults to the current working
+  directory; overridden per-deployment by a `settings.json` beside it (see `settings.json.example`).
+  The server's copy lives at `deploy/servers/prod/settings.json` and is pushed by `deploy_code.bash`
+  — `settings.py` is deployed too, so the override must be re-asserted or the app reads the wrong DB.
 - `config.toml`: Server login credentials for deployment scripts
 
 ### Database Schema

@@ -1024,6 +1024,9 @@ if __name__ == '__main__':
                         help="Test just the loading of the survey data, to verify e.g. "
                         "it's in the order expected.")
     parser.add_argument("--test-user", action='store', default=None)
+    parser.add_argument("--skip-schema-check", action='store_true',
+                        help="Start even if the database schema does not match tables.py. "
+                        "Escape hatch only; the app will error on most requests.")
     args = parser.parse_args()
 
     if True: # Later can support alternate
@@ -1031,6 +1034,26 @@ if __name__ == '__main__':
         print(f"Using: {LOCAL_DB_SPECIFIER}")
 
     engine = create_engine(db_specifier)
+
+    # Fail at startup rather than on the next user's page load. A deploy can
+    # overwrite the server's settings.py and silently repoint us at a stale
+    # database; that stayed invisible for months once, because the running
+    # daemon kept its old engine until it was restarted.
+    if not args.skip_schema_check:
+        try:
+            from validate_db_schema import validate_schema
+        except ImportError as e:
+            print(f"WARNING: schema check unavailable ({e}); starting anyway.")
+            print("WARNING: deploy validate_db_schema.py to enable it.")
+        else:
+            if not validate_schema():
+                print()
+                print("Refusing to start against an incompatible database.")
+                print(f"Database in use: {LOCAL_DB_SPECIFIER}")
+                print("If that path is not the one you expect, check settings.json "
+                      "next to settings.py (see settings.json.example).")
+                print("To start anyway, pass --skip-schema-check")
+                exit(1)
 
     if args.test_get_survey_data:
         # Why autoflush?

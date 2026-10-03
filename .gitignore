@@ -7,6 +7,9 @@ __pycache__*
 
 config.toml
 settings.json
+# ...except the version controlled per-server copies, which deploy_code.bash pushes.
+# These hold paths only, no credentials (those stay in config.toml).
+!deploy/servers/**/settings.json
 upload_list.txt
 uv.lock
 

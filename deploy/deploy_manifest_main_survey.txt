@@ -6,6 +6,7 @@ app.py
 dashboard_html_from_db.py
 tables.py
 settings.py
+validate_db_schema.py
 
 # Configuration files
 platinum_counts.json

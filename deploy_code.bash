@@ -6,9 +6,18 @@ set -e
 
 # Read config.toml; just need the login line
 login=$(grep login config.toml | cut -d' ' -f3 | tr -d '"')
-remote_path="/home/public"
 
-echo "Will deploy to: $login:$remote_path"
+# Server-specific paths live in deploy/servers/<name>/; pick one with SERVER=<name>
+server="${SERVER:-prod}"
+server_dir="deploy/servers/$server"
+if [[ ! -f "$server_dir/server.env" ]]; then
+    echo "ERROR: no such server '$server' (expected $server_dir/server.env)"
+    echo "Available: $(ls -1 deploy/servers 2>/dev/null | tr '\n' ' ')"
+    exit 1
+fi
+source "$server_dir/server.env"
+
+echo "Will deploy to: $login:$remote_path (server: $server)"
 echo ""
 
 # Prompt user to select a manifest file
@@ -44,6 +53,14 @@ echo "Files that would be updated:"
 rsync -avz --dry-run --files-from=$manifest ./ "$login:$remote_path/" 2>/dev/null | grep -E "^[^.]" | grep -v "^sending\|^sent\|^total\|^$" || echo "  (no changes detected)"
 echo ""
 
+# settings.py is in the manifests, so it overwrites whatever is on the server.
+# Re-assert the server's path overrides in the same breath, or the app falls
+# back to the repo defaults and reads the wrong database.
+echo "Server config that would be pushed:"
+echo "  $server_dir/settings.json -> $remote_path/settings.json"
+sed 's/^/    /' "$server_dir/settings.json"
+echo ""
+
 # Ask for confirmation
 echo "Do you want to deploy these files? (y/n)"
 read -r answer
@@ -56,6 +73,10 @@ fi
 echo ""
 echo "Deploying..."
 rsync -avz --files-from=$manifest ./ "$login:$remote_path/"
+
+echo ""
+echo "Pushing server config..."
+rsync -avz "$server_dir/settings.json" "$login:$remote_path/settings.json"
 
 echo ""
 echo "Deployment complete!"

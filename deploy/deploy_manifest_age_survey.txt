@@ -6,6 +6,7 @@ app.py
 tables.py
 settings.py
 age_survey.py
+validate_db_schema.py
 
 # Configuration files
 

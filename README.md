@@ -46,6 +46,12 @@ To work with a copy of the production database, download it first:
 ./grab_latest_db.bash
 ```
 
+If there are pending schema migrations (e.g. columns added locally but not yet pushed to prod), apply them after downloading:
+
+```bash
+alembic upgrade head
+```
+
 
 # Notes on hosting setup
 The hosting site provides an apache2 server.
@@ -54,11 +60,37 @@ The flask app (`app.py`) is run as a daemon process.
 
 The flask app is what you see on the website, via a reverse proxy to port 80. HTTPS was added by the hosting provider in 2024.
 
-The sqlite3 database file lives in a directory on the hosting site (controlled by `settings.py`).
+The sqlite3 database file lives in a directory on the hosting site (`/home/public/db/`).
+
+By default `settings.py` looks for the database in the current working directory, which is what
+works locally. The server often needs it somewhere else, so it reads overrides from a `settings.json`
+sitting next to `settings.py` (see `settings.json.example`). We keep server copies
+at `deploy/servers/prod/settings.json` and `deploy_code.bash` pushes this on every
+deploy — `settings.py` is itself deployed, so without that the overrides get clobbered and the
+app silently reads a non-extant (or worse, stale) `/home/public/pogo_sj.db`.
+
+On startup `app.py` validates the database schema against `tables.py` and refuses to start if
+columns are missing, printing the database path it resolved. This turns a mispointed or
+un-migrated database into an immediate, obvious startup failure instead of a 500 on every
+request. Pass `--skip-schema-check` to start anyway.
 
 I download the DB from the server, generate stats locally, and push the generated HTML back to the server. Later, I added an admin interface to do this remotely.
 
 Icons used in the survey and leaderboards are uploaded to the server in appropriate directories. They are not part of the git repo, however.
+
+## Group ownership of server files (one-time setup)
+
+Apache and the Flask daemon reach these files as the `web` group, so anything uploaded to the
+server needs to be group-owned by `web` and group-readable — group-*writable* for the database,
+since the daemon writes to it.
+
+With my current hosting, `/home/public/static/` and `/home/public/db/` carry
+the setgid bit so newly created files land in the `web` group automatically:
+
+```bash
+chgrp web /home/public/static /home/public/db
+chmod g+rws /home/public/static /home/public/db
+```
 
 ## Local testing
 
@@ -132,6 +164,7 @@ When making changes locally, the below files need to be copied to the server:
 - `app.py` - Main Flask application
 - `tables.py` - SQLAlchemy database models
 - `settings.py` - Configuration (paths, database location)
+- `validate_db_schema.py` - Schema check; `app.py` imports it at startup, so it must be deployed
 - `age_survey.py` - Age survey routes and plotting
 
 ### Configuration Files
@@ -153,9 +186,17 @@ When making changes locally, the below files need to be copied to the server:
 
 **Note:** Icons (PNG files in `static/`) are managed separately and are not version controlled.
 
+### Server Configuration
+- `deploy/servers/<name>/settings.json` - Path overrides for that server, pushed to
+  `$remote_path/settings.json` on every deploy
+- `deploy/servers/<name>/server.env` - Paths for that server (`remote_path`), sourced by
+  `deploy_code.bash`
+
 ### Automation
 - The deploy folder contains manifests for the above categories
 - The deploy_code.bash script prompts which upload manifest to use
+- `deploy_code.bash` deploys to `prod` by default; use `SERVER=<name> ./deploy_code.bash` for
+  another server
 
 ## Past notes
 
